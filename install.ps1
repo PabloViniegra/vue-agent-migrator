@@ -1,20 +1,10 @@
-<#
-.SYNOPSIS
-    Vue 2 → Vue 3 Migration Tool Installer for Windows
-.DESCRIPTION
-    Installs Vue migration agents for: Claude Code, GitHub Copilot, Codex, Gemini, OpenCode
-.PARAMETER TargetPath
-    Target directory for installation (default: current directory)
-.PARAMETER Platform
-    Platform to install: claude, copilot, codex, gemini, opencode, all
-.EXAMPLE
-    .\install.ps1
-    .\install.ps1 -TargetPath "C:\my-vue-project"
-    .\install.ps1 -Platform claude
-#>
+# Vue 2 to Vue 3 Migration Tool Installer for Windows
+# Installs Vue migration agents for: Claude Code, GitHub Copilot, Codex, Gemini, OpenCode
 
 param(
-    [string]$TargetPath = ".",
+    [Parameter(Mandatory=$true, Position=0)]
+    [string]$TargetPath,
+
     [ValidateSet("claude", "copilot", "codex", "gemini", "opencode", "all", "")]
     [string]$Platform = ""
 )
@@ -22,41 +12,26 @@ param(
 # Script directory
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
-# Colors and formatting
-function Write-ColorOutput($ForegroundColor) {
-    $fc = $host.UI.RawUI.ForegroundColor
-    $host.UI.RawUI.ForegroundColor = $ForegroundColor
-    if ($args) {
-        Write-Output $args
-    }
-    $host.UI.RawUI.ForegroundColor = $fc
-}
-
 function Write-Banner {
     Write-Host ""
-    Write-Host "╔══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-    Write-Host "║       Vue 2 → Vue 3 Migration Tool Installer             ║" -ForegroundColor Cyan
-    Write-Host "╚══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+    Write-Host "================================================================" -ForegroundColor Cyan
+    Write-Host "       Vue 2 to Vue 3 Migration Tool Installer" -ForegroundColor Cyan
+    Write-Host "================================================================" -ForegroundColor Cyan
     Write-Host ""
 }
 
 function Write-Step($message) {
-    Write-Host "▶ " -ForegroundColor Blue -NoNewline
+    Write-Host "> " -ForegroundColor Blue -NoNewline
     Write-Host $message
 }
 
 function Write-Success($message) {
-    Write-Host "✔ " -ForegroundColor Green -NoNewline
+    Write-Host "[OK] " -ForegroundColor Green -NoNewline
     Write-Host $message
 }
 
-function Write-Error($message) {
-    Write-Host "✖ " -ForegroundColor Red -NoNewline
-    Write-Host $message
-}
-
-function Write-Warning($message) {
-    Write-Host "⚠ " -ForegroundColor Yellow -NoNewline
+function Write-ErrorMsg($message) {
+    Write-Host "[ERROR] " -ForegroundColor Red -NoNewline
     Write-Host $message
 }
 
@@ -87,14 +62,14 @@ function Install-ClaudeCode {
     New-Item -ItemType Directory -Force -Path $agentsDir | Out-Null
     New-Item -ItemType Directory -Force -Path $commandsDir | Out-Null
 
-    $sourceAgents = Join-Path $ScriptDir "platforms\claude-code\agents\*"
-    $sourceCommands = Join-Path $ScriptDir "platforms\claude-code\commands\*"
+    $sourceAgents = Join-Path $ScriptDir "platforms\claude-code\agents\*.md"
+    $sourceCommands = Join-Path $ScriptDir "platforms\claude-code\commands\*.md"
 
     if (Test-Path $sourceAgents) {
-        Copy-Item $sourceAgents -Destination $agentsDir -Force
+        Get-ChildItem $sourceAgents | Copy-Item -Destination $agentsDir -Force
     }
     if (Test-Path $sourceCommands) {
-        Copy-Item $sourceCommands -Destination $commandsDir -Force
+        Get-ChildItem $sourceCommands | Copy-Item -Destination $commandsDir -Force
     }
 
     Write-Success "Claude Code configuration installed"
@@ -103,7 +78,7 @@ function Install-ClaudeCode {
     Write-Host ""
     Write-Host "    Usage: Run " -NoNewline
     Write-Host "/vue-migrate" -ForegroundColor Yellow -NoNewline
-    Write-Host " in Claude Code" -ForegroundColor Cyan
+    Write-Host " in Claude Code"
 }
 
 function Install-GitHubCopilot {
@@ -120,8 +95,7 @@ function Install-GitHubCopilot {
     Write-Success "GitHub Copilot configuration installed"
     Write-Host "    Instructions: $githubDir\copilot-instructions.md"
     Write-Host ""
-    Write-Host "    Usage: Ask Copilot to " -NoNewline
-    Write-Host '"migrate to Vue 3"' -ForegroundColor Yellow
+    Write-Host "    Usage: Ask Copilot to 'migrate to Vue 3'"
 }
 
 function Install-Codex {
@@ -138,8 +112,7 @@ function Install-Codex {
     Write-Success "Codex CLI configuration installed"
     Write-Host "    Instructions: $codexDir\instructions.md"
     Write-Host ""
-    Write-Host "    Usage: Ask Codex to " -NoNewline
-    Write-Host '"migrate to Vue 3"' -ForegroundColor Yellow
+    Write-Host "    Usage: Ask Codex to 'migrate to Vue 3'"
 }
 
 function Install-Gemini {
@@ -156,8 +129,7 @@ function Install-Gemini {
     Write-Success "Gemini CLI configuration installed"
     Write-Host "    Instructions: $geminiDir\GEMINI.md"
     Write-Host ""
-    Write-Host "    Usage: Ask Gemini to " -NoNewline
-    Write-Host '"migrate to Vue 3"' -ForegroundColor Yellow
+    Write-Host "    Usage: Ask Gemini to 'migrate to Vue 3'"
 }
 
 function Install-OpenCode {
@@ -166,16 +138,15 @@ function Install-OpenCode {
     $opencodeDir = Join-Path $TargetPath ".opencode\agents"
     New-Item -ItemType Directory -Force -Path $opencodeDir | Out-Null
 
-    $source = Join-Path $ScriptDir "platforms\opencode\agents\*"
+    $source = Join-Path $ScriptDir "platforms\opencode\agents\*.md"
     if (Test-Path $source) {
-        Copy-Item $source -Destination $opencodeDir -Force
+        Get-ChildItem $source | Copy-Item -Destination $opencodeDir -Force
     }
 
     Write-Success "OpenCode configuration installed"
     Write-Host "    Agents: $opencodeDir"
     Write-Host ""
-    Write-Host "    Usage: Ask OpenCode to " -NoNewline
-    Write-Host '"migrate vue"' -ForegroundColor Yellow
+    Write-Host "    Usage: Ask OpenCode to 'migrate vue'"
 }
 
 function Install-All {
@@ -194,18 +165,15 @@ function Install-All {
 
 function Write-FinalInstructions {
     Write-Host ""
-    Write-Host "════════════════════════════════════════════════════════════" -ForegroundColor Green
+    Write-Host "================================================================" -ForegroundColor Green
     Write-Host "Installation complete!" -ForegroundColor Green
-    Write-Host "════════════════════════════════════════════════════════════" -ForegroundColor Green
+    Write-Host "================================================================" -ForegroundColor Green
     Write-Host ""
     Write-Host "Next steps:"
     Write-Host "  1. Open your Vue 2 project in your AI assistant"
     Write-Host "  2. Ask it to migrate your project to Vue 3"
     Write-Host "  3. Review and approve the migration plan"
     Write-Host "  4. Let the assistant execute the migration"
-    Write-Host ""
-    Write-Host "Documentation: " -NoNewline
-    Write-Host "https://github.com/your-repo/vue-agent-migrator" -ForegroundColor Cyan
     Write-Host ""
 }
 
@@ -216,16 +184,24 @@ function Main {
     # Check if platforms directory exists
     $platformsDir = Join-Path $ScriptDir "platforms"
     if (-not (Test-Path $platformsDir)) {
-        Write-Error "Platforms directory not found. Make sure you're running from the correct location."
+        Write-ErrorMsg "Platforms directory not found."
+        Write-Host "Make sure you are running this script from the vue-agent-migrator directory."
         exit 1
     }
 
-    # Resolve target path
-    $TargetPath = Resolve-Path $TargetPath -ErrorAction SilentlyContinue
-    if (-not $TargetPath) {
-        Write-Error "Target directory does not exist."
+    # Validate and resolve target path
+    if (-not (Test-Path $TargetPath)) {
+        Write-ErrorMsg "Target directory does not exist: $TargetPath"
+        Write-Host ""
+        Write-Host "Usage:"
+        Write-Host "  .\install.ps1 <path-to-vue2-project>"
+        Write-Host ""
+        Write-Host "Example:"
+        Write-Host "  .\install.ps1 C:\Projects\my-vue-app"
         exit 1
     }
+
+    $script:TargetPath = Resolve-Path $TargetPath
 
     Write-Host "Target directory: " -NoNewline
     Write-Host $TargetPath -ForegroundColor Cyan
@@ -259,7 +235,7 @@ function Main {
             exit 0
         }
         default {
-            Write-Error "Invalid choice. Please run the script again."
+            Write-ErrorMsg "Invalid choice. Please run the script again."
             exit 1
         }
     }

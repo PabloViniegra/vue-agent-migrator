@@ -18,8 +18,20 @@ NC='\033[0m' # No Color
 # Script directory (where this script is located)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Target directory (current working directory by default)
-TARGET_DIR="${1:-.}"
+# Target directory (required parameter)
+if [ -z "$1" ]; then
+    echo -e "${RED}Error: Target directory is required${NC}"
+    echo ""
+    echo "Usage:"
+    echo "  ./install.sh <path-to-vue2-project>"
+    echo ""
+    echo "Example:"
+    echo "  ./install.sh /home/user/my-vue-app"
+    echo "  ./install.sh ~/projects/vue-project"
+    exit 1
+fi
+
+TARGET_DIR="$1"
 
 print_banner() {
     echo -e "${CYAN}"

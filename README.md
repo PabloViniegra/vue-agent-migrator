@@ -23,20 +23,22 @@ cd vue-agent-migrator
 
 ### 2. Run Installer
 
+You must provide the path to your Vue 2 project as a parameter.
+
 #### Unix/macOS/Linux
 ```bash
 chmod +x install.sh
-./install.sh
+./install.sh /path/to/your/vue2-project
 ```
 
 #### Windows (PowerShell)
 ```powershell
-.\install.ps1
+.\install.ps1 C:\path\to\your\vue2-project
 ```
 
 #### Windows (CMD)
 ```cmd
-install.bat
+install.bat C:\path\to\your\vue2-project
 ```
 
 ### 3. Select Your Platform

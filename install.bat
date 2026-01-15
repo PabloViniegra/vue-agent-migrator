@@ -9,7 +9,25 @@ REM ═════════════════════════�
 set "SCRIPT_DIR=%~dp0"
 set "TARGET_DIR=%~1"
 
-if "%TARGET_DIR%"=="" set "TARGET_DIR=%CD%"
+REM Check if target directory is provided
+if "%TARGET_DIR%"=="" (
+    echo [ERROR] Target directory is required
+    echo.
+    echo Usage:
+    echo   install.bat ^<path-to-vue2-project^>
+    echo.
+    echo Example:
+    echo   install.bat C:\Projects\my-vue-app
+    echo.
+    goto :end
+)
+
+REM Check if target directory exists
+if not exist "%TARGET_DIR%" (
+    echo [ERROR] Target directory does not exist: %TARGET_DIR%
+    echo.
+    goto :end
+)
 
 REM Check if PowerShell is available and use it
 where powershell >nul 2>&1
