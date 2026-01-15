@@ -317,4 +317,14 @@ const user = useLocalStorage('user', null)
 
 ---
 
+## License
+
+MIT License
+
+Copyright (c) 2024 Vue Agent Migrator Contributors
+
+See [LICENSE](../LICENSE) file for full details.
+
+---
+
 Questions? Open an issue in the repository.

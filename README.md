@@ -280,4 +280,6 @@ Add to instructions: "Wait for my explicit approval before making any changes"
 
 ## License
 
-MIT
+MIT License - see the [LICENSE](LICENSE) file for details.
+
+Copyright (c) 2024 Vue Agent Migrator Contributors
