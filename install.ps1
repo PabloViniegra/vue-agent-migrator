@@ -104,13 +104,13 @@ function Install-Codex {
     $codexDir = Join-Path $TargetPath ".codex"
     New-Item -ItemType Directory -Force -Path $codexDir | Out-Null
 
-    $source = Join-Path $ScriptDir "platforms\codex\instructions.md"
+    $source = Join-Path $ScriptDir "platforms\codex\AGENTS.md"
     if (Test-Path $source) {
         Copy-Item $source -Destination $codexDir -Force
     }
 
     Write-Success "Codex CLI configuration installed"
-    Write-Host "    Instructions: $codexDir\instructions.md"
+    Write-Host "    Instructions: $codexDir\AGENTS.md"
     Write-Host ""
     Write-Host "    Usage: Ask Codex to 'migrate to Vue 3'"
 }
@@ -135,18 +135,27 @@ function Install-Gemini {
 function Install-OpenCode {
     Write-Step "Installing for OpenCode..."
 
-    $opencodeDir = Join-Path $TargetPath ".opencode\agents"
+    $opencodeDir = Join-Path $TargetPath ".opencode\agent"
     New-Item -ItemType Directory -Force -Path $opencodeDir | Out-Null
 
-    $source = Join-Path $ScriptDir "platforms\opencode\agents\*.md"
-    if (Test-Path $source) {
-        Get-ChildItem $source | Copy-Item -Destination $opencodeDir -Force
+    # Copy primary agents
+    $sourceAgents = Join-Path $ScriptDir "platforms\opencode\agent\*.md"
+    if (Test-Path $sourceAgents) {
+        Get-ChildItem $sourceAgents | Copy-Item -Destination $opencodeDir -Force
+    }
+
+    # Copy subagents
+    $sourceSubagents = Join-Path $ScriptDir "platforms\opencode\agent\subagent\*.md"
+    if (Test-Path $sourceSubagents) {
+        Get-ChildItem $sourceSubagents | Copy-Item -Destination $opencodeDir -Force
     }
 
     Write-Success "OpenCode configuration installed"
-    Write-Host "    Agents: $opencodeDir"
+    Write-Host "    Agents:   $opencodeDir"
+    Write-Host "    Subagents: (included in agent directory)"
     Write-Host ""
     Write-Host "    Usage: Ask OpenCode to 'migrate vue'"
+    Write-Host "    Subagents: @vue-migration-planner, @vue-migration-executor, @vue-migration-reviewer"
 }
 
 function Install-All {

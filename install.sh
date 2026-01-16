@@ -107,10 +107,10 @@ install_codex() {
 
     mkdir -p "$TARGET_DIR/.codex"
 
-    cp "$SCRIPT_DIR/platforms/codex/instructions.md" "$TARGET_DIR/.codex/" 2>/dev/null || true
+    cp "$SCRIPT_DIR/platforms/codex/AGENTS.md" "$TARGET_DIR/.codex/" 2>/dev/null || true
 
     print_success "Codex CLI configuration installed"
-    echo "    Instructions: $TARGET_DIR/.codex/instructions.md"
+    echo "    Instructions: $TARGET_DIR/.codex/AGENTS.md"
     echo ""
     echo -e "    ${CYAN}Usage: Ask Codex to ${YELLOW}\"migrate to Vue 3\"${NC}"
 }
@@ -131,14 +131,20 @@ install_gemini() {
 install_opencode() {
     print_step "Installing for OpenCode..."
 
-    mkdir -p "$TARGET_DIR/.opencode/agents"
+    mkdir -p "$TARGET_DIR/.opencode/agent"
 
-    cp "$SCRIPT_DIR/platforms/opencode/agents/"*.md "$TARGET_DIR/.opencode/agents/" 2>/dev/null || true
+    # Copy primary agents
+    cp "$SCRIPT_DIR/platforms/opencode/agent/"*.md "$TARGET_DIR/.opencode/agent/" 2>/dev/null || true
+
+    # Copy subagents
+    cp "$SCRIPT_DIR/platforms/opencode/agent/subagent/"*.md "$TARGET_DIR/.opencode/agent/" 2>/dev/null || true
 
     print_success "OpenCode configuration installed"
-    echo "    Agents: $TARGET_DIR/.opencode/agents/"
+    echo "    Agents:   $TARGET_DIR/.opencode/agent/"
+    echo "    Subagents: (included in agent directory)"
     echo ""
     echo -e "    ${CYAN}Usage: Ask OpenCode to ${YELLOW}\"migrate vue\"${NC}"
+    echo -e "    ${CYAN}Subagents: @vue-migration-planner, @vue-migration-executor, @vue-migration-reviewer${NC}"
 }
 
 install_all() {

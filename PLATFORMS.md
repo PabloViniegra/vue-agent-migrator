@@ -1,0 +1,217 @@
+# Platform-Specific Agent Systems
+
+This document explains how the Vue migration agents work on different AI coding platforms.
+
+## Multi-Agent Systems
+
+These platforms support multiple specialized agents working together:
+
+### Claude Code
+- **Configuration**: `.claude/agents/` (agent files) and `.claude/commands/` (slash commands)
+- **Agent Type**: YAML frontmatter with `name`, `description`, `color`
+- **Workflow**:
+  - Primary agent: `vue-migrator` (orchestrator)
+  - Subagents: `vue-migration-planner`, `vue-migration-executor`, `vue-migration-reviewer`
+  - Invokes via Task tool or slash command `/vue-migrate`
+  - Enforces phased workflow with approval gates
+- **Trigger**: `/vue-migrate` or mention `@vue-migrator`
+
+### OpenCode
+- **Configuration**: `.opencode/agent/` (all agent files together)
+- **Agent Type**: Markdown frontmatter with `mode: primary|subagent`
+- **Workflow**:
+  - Primary agent: `vue-migrator.md` (`mode: primary`)
+  - Subagents: `vue-migration-planner.md`, `vue-migration-executor.md`, `vue-migration-reviewer.md` (`mode: subagent`)
+  - Subagents copied to same directory as primary agent
+  - Invokes via Task tool or `@mention`
+  - Enforces phased workflow with approval gates
+- **Permissions**: Fine-grained control per agent (tools, bash, edit)
+- **Trigger**: "migrate vue", `@vue-migrator`, or `@vue-migration-*`
+
+## Single-Agent Systems
+
+These platforms use a single instruction file instead of multiple agents:
+
+### GitHub Copilot
+- **Configuration**: `.github/copilot-instructions.md`
+- **System**: Instructions file that provides context for all Copilot suggestions
+- **Workflow**:
+  - Single file contains complete migration workflow
+  - No agent hierarchy - one AI handles all phases
+  - Must manually enforce approval gates in conversation
+- **Trigger**: Ask "migrate to Vue 3" in any Copilot interface
+
+### OpenAI Codex CLI
+- **Configuration**: `.codex/AGENTS.md` (IMPORTANT: File must be named `AGENTS.md`, not `instructions.md`)
+- **System**: Codex reads `AGENTS.md` files from multiple locations:
+  1. Global: `~/.codex/AGENTS.md`
+  2. Project root: `.codex/AGENTS.md`
+  3. Current directory: `.codex/AGENTS.md`
+  4. Subdirectories (optional)
+- **Workflow**:
+  - Single file contains complete migration workflow
+  - Codex concatenates multiple AGENTS.md files if found
+  - No agent hierarchy - one AI handles all phases
+  - Must manually enforce approval gates in conversation
+- **Trigger**: Ask "migrate to Vue 3" in Codex CLI
+
+### Google Gemini CLI
+- **Configuration**: `.gemini/GEMINI.md`
+- **System**: Gemini reads `GEMINI.md` files from multiple locations:
+  1. Global: `~/.gemini/GEMINI.md`
+  2. Project root: `.gemini/GEMINI.md`
+  3. Current directory: `.gemini/GEMINI.md`
+  4. Subdirectories (respects `.gitignore`)
+- **Workflow**:
+  - Single file contains complete migration workflow
+  - Gemini concatenates multiple GEMINI.md files if found
+  - No agent hierarchy - one AI handles all phases
+  - Must manually enforce approval gates in conversation
+- **Trigger**: Ask "migrate to Vue 3" in Gemini CLI
+
+## Key Differences
+
+| Feature | Claude Code | OpenCode | GitHub Copilot | Codex | Gemini |
+|----------|-------------|----------|----------------|--------|--------|
+| **Agent Files** | Multiple (agents/ + commands/) | Multiple (agent/) | Single | Single | Single |
+| **Frontmatter** | YAML | Markdown (mode) | None | None | None |
+| **Agent Hierarchy** | Yes (primary + subagents) | Yes (primary + subagents) | No | No | No |
+| **Auto Workflow** | Phased, enforced by agents | Phased, enforced by agents | Manual, in instructions | Manual, in instructions |
+| **Permissions** | Via agent definition | Per-agent, per-tool | None | None | None |
+| **Trigger Method** | `/vue-migrate`, `@mention` | `@mention`, text | Text | Text | Text |
+| **File Naming** | Flexible | Flexible | `copilot-instructions.md` | `AGENTS.md` | `GEMINI.md` |
+
+## File Installation Summary
+
+### Multi-Agent Platforms
+
+```
+Claude Code:
+  .claude/
+    agents/
+      vue-migrator.md
+      vue-migration-planner.md
+      vue-migration-executor.md
+      vue-migration-reviewer.md
+    commands/
+      vue-migrate.md
+
+OpenCode:
+  .opencode/
+    agent/
+      vue-migrator.md              (mode: primary)
+      vue-migration-planner.md        (mode: subagent)
+      vue-migration-executor.md        (mode: subagent)
+      vue-migration-reviewer.md        (mode: subagent)
+```
+
+### Single-Agent Platforms
+
+```
+GitHub Copilot:
+  .github/
+    copilot-instructions.md
+
+OpenAI Codex CLI:
+  .codex/
+    AGENTS.md                    (IMPORTANT: Not instructions.md)
+
+Google Gemini CLI:
+  .gemini/
+    GEMINI.md
+```
+
+## Migration Workflow Comparison
+
+### Multi-Agent Systems (Claude Code, OpenCode)
+
+**Automatic Phase Enforcement:**
+1. User triggers migration
+2. Orchestrator agent (vue-migrator) invokes planner agent
+3. Planner analyzes and produces Migration Analysis Document
+4. Orchestrator presents plan and **automatically waits for approval**
+5. After approval, orchestrator invokes executor agent
+6. Executor implements the migration
+7. Orchestrator invokes reviewer agent
+8. Reviewer validates and produces Review Report
+9. Final recommendation provided
+
+**Benefits:**
+- Clear separation of concerns
+- Automatic workflow enforcement
+- Each agent has specialized permissions
+- User can switch between agents during session
+
+### Single-Agent Systems (Copilot, Codex, Gemini)
+
+**Manual Phase Enforcement:**
+1. User triggers migration
+2. AI analyzes project and produces Migration Plan
+3. AI **asks** for user approval (not automatic)
+4. User must explicitly approve
+5. AI implements the migration
+6. AI validates and produces Review Report
+7. Final recommendation provided
+
+**Benefits:**
+- Simpler setup (single file)
+- Consistent behavior (one AI instance)
+- Easier to modify workflow
+- Less context switching
+
+## Important Notes
+
+### For Codex Users
+- ⚠️ **CRITICAL**: File must be named `AGENTS.md`, NOT `instructions.md`
+- Codex reads files in this order: `AGENTS.override.md` → `AGENTS.md`
+- You can use `AGENTS.override.md` for project-specific overrides
+- Codex concatenates files from project root down to current directory
+
+### For Gemini Users
+- File is named `GEMINI.md`
+- Gemini loads from: global (`.gemini/GEMINI.md`) → project root → current directory
+- Use `/memory show` command to see loaded context
+- Use `/memory refresh` to reload context files
+- Can modularize with `@file.md` imports in GEMINI.md
+
+### For GitHub Copilot Users
+- File is named `copilot-instructions.md`
+- Instructions are automatically loaded by Copilot for this repository
+- Works in VS Code, GitHub web, JetBrains, Xcode, etc.
+- Instructions are invisible to user, only affect AI suggestions
+
+## Best Practices
+
+1. **Always test after installation**: Verify the file is in the correct location with correct name
+2. **Review instructions**: Read the installed file to ensure content is correct
+3. **Check platform docs**: Each platform has specific behaviors and features
+4. **Use version control**: Commit the instruction file so it persists
+5. **Platform-specific**: Customize instructions for each platform's capabilities
+
+## Troubleshooting
+
+### Codex not loading instructions
+- Verify file is named `AGENTS.md` (not `instructions.md`)
+- Check file is in `.codex/` directory at project root
+- Run `codex /memory show` to see loaded context
+- Run `codex /memory refresh` to reload context files
+
+### Gemini not loading instructions
+- Verify file is named `GEMINI.md`
+- Check file is in `.gemini/` directory
+- Check `.gitignore` isn't excluding `.gemini/`
+- Run `gemini /memory` to view context hierarchy
+
+### Copilot not using instructions
+- Verify file is at `.github/copilot-instructions.md`
+- Check Copilot extension is active in your IDE
+- Try restarting your IDE
+- Check Copilot settings are not blocking custom instructions
+
+## References
+
+- [Claude Code Documentation](https://docs.anthropic.com/)
+- [OpenCode Documentation](https://opencode.ai/docs/agents/)
+- [GitHub Copilot Custom Instructions](https://docs.github.com/copilot/customizing-copilot/adding-custom-instructions-for-github-copilot)
+- [OpenAI Codex Documentation](https://developers.openai.com/codex/guides/agents-md/)
+- [Google Gemini CLI Documentation](https://google-gemini.github.io/gemini-cli/docs/cli/gemini-md.html)

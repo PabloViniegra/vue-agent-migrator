@@ -100,9 +100,9 @@ goto :done
 echo.
 echo Installing for Codex CLI...
 if not exist "%TARGET_DIR%\.codex" mkdir "%TARGET_DIR%\.codex"
-copy /Y "%SCRIPT_DIR%platforms\codex\instructions.md" "%TARGET_DIR%\.codex\" >nul 2>&1
+copy /Y "%SCRIPT_DIR%platforms\codex\AGENTS.md" "%TARGET_DIR%\.codex\" >nul 2>&1
 echo [OK] Codex CLI configuration installed
-echo     Instructions: %TARGET_DIR%\.codex\instructions.md
+echo     Instructions: %TARGET_DIR%\.codex\AGENTS.md
 echo     Usage: Ask Codex to "migrate to Vue 3"
 goto :done
 
@@ -119,11 +119,14 @@ goto :done
 :opencode
 echo.
 echo Installing for OpenCode...
-if not exist "%TARGET_DIR%\.opencode\agents" mkdir "%TARGET_DIR%\.opencode\agents"
-xcopy /Y /Q "%SCRIPT_DIR%platforms\opencode\agents\*" "%TARGET_DIR%\.opencode\agents\" >nul 2>&1
+if not exist "%TARGET_DIR%\.opencode\agent" mkdir "%TARGET_DIR%\.opencode\agent"
+xcopy /Y /Q "%SCRIPT_DIR%platforms\opencode\agent\*.md" "%TARGET_DIR%\.opencode\agent\" >nul 2>&1
+xcopy /Y /Q "%SCRIPT_DIR%platforms\opencode\agent\subagent\*.md" "%TARGET_DIR%\.opencode\agent\" >nul 2>&1
 echo [OK] OpenCode configuration installed
-echo     Agents: %TARGET_DIR%\.opencode\agents\
+echo     Agents:   %TARGET_DIR%\.opencode\agent\
+echo     Subagents: (included in agent directory)
 echo     Usage: Ask OpenCode to "migrate vue"
+echo     Subagents: @vue-migration-planner, @vue-migration-executor, @vue-migration-reviewer
 goto :done
 
 :all
@@ -155,7 +158,7 @@ goto :eof
 
 :codex_silent
 if not exist "%TARGET_DIR%\.codex" mkdir "%TARGET_DIR%\.codex"
-copy /Y "%SCRIPT_DIR%platforms\codex\instructions.md" "%TARGET_DIR%\.codex\" >nul 2>&1
+copy /Y "%SCRIPT_DIR%platforms\codex\AGENTS.md" "%TARGET_DIR%\.codex\" >nul 2>&1
 echo   [OK] Codex CLI
 goto :eof
 
@@ -166,8 +169,9 @@ echo   [OK] Gemini CLI
 goto :eof
 
 :opencode_silent
-if not exist "%TARGET_DIR%\.opencode\agents" mkdir "%TARGET_DIR%\.opencode\agents"
-xcopy /Y /Q "%SCRIPT_DIR%platforms\opencode\agents\*" "%TARGET_DIR%\.opencode\agents\" >nul 2>&1
+if not exist "%TARGET_DIR%\.opencode\agent" mkdir "%TARGET_DIR%\.opencode\agent"
+xcopy /Y /Q "%SCRIPT_DIR%platforms\opencode\agent\*.md" "%TARGET_DIR%\.opencode\agent\" >nul 2>&1
+xcopy /Y /Q "%SCRIPT_DIR%platforms\opencode\agent\subagent\*.md" "%TARGET_DIR%\.opencode\agent\" >nul 2>&1
 echo   [OK] OpenCode
 goto :eof
 

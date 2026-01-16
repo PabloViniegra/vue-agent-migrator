@@ -8,9 +8,9 @@ A multi-agent system for migrating Vue 2 applications to Vue 3. Supports multipl
 |----------|-----------------|-----------------|
 | **Claude Code** | `.claude/agents/`, `.claude/commands/` | `/vue-migrate` |
 | **GitHub Copilot** | `.github/copilot-instructions.md` | "migrate to Vue 3" |
-| **Codex CLI** | `.codex/instructions.md` | "migrate to Vue 3" |
+| **Codex CLI** | `.codex/AGENTS.md` | "migrate to Vue 3" |
 | **Gemini CLI** | `.gemini/GEMINI.md` | "migrate to Vue 3" |
-| **OpenCode** | `.opencode/agents/` | "migrate vue" |
+| **OpenCode** | `.opencode/agent/` | "migrate vue" or `@vue-migrator` |
 
 ## Quick Start
 
@@ -92,6 +92,11 @@ mkdir -p .claude/agents .claude/commands
 # Copy files (adjust source path as needed)
 cp /path/to/vue-agent-migrator/platforms/claude-code/agents/*.md .claude/agents/
 cp /path/to/vue-agent-migrator/platforms/claude-code/commands/*.md .claude/commands/
+
+# For OpenCode
+mkdir -p .opencode/agent
+cp /path/to/vue-agent-migrator/platforms/opencode/agent/*.md .opencode/agent/
+cp /path/to/vue-agent-migrator/platforms/opencode/agent/subagent/*.md .opencode/agent/
 ```
 
 ### Option C: Non-Interactive (CLI flags)
@@ -226,8 +231,11 @@ vue-agent-migrator/
 - Trigger: Ask "migrate to Vue 3"
 
 ### OpenCode
-- Agent-based system in `.opencode/agents/`
-- Trigger: Ask "migrate vue"
+- Agent-based system in `.opencode/agent/` (primary agent + subagents)
+- Primary agent: `vue-migrator.md`
+- Subagents: `vue-migration-planner.md`, `vue-migration-executor.md`, `vue-migration-reviewer.md`
+- Trigger: Ask "migrate vue" or use `@vue-migrator`
+- Subagents can be invoked via `@vue-migration-planner`, `@vue-migration-executor`, `@vue-migration-reviewer`
 
 ## Success Criteria
 
