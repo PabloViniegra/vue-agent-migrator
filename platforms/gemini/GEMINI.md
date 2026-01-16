@@ -22,6 +22,8 @@ Before ANY code changes, analyze the project:
 - Filters usage
 - Event bus patterns ($on, $off)
 - Options API vs Composition API
+- Class Components (vue-class-component, vue-property-decorator)
+- vuex-class decorators usage
 
 **Output a Migration Plan** with:
 1. Executive Summary
@@ -45,6 +47,9 @@ After approval, migrate in this order:
 ```bash
 npm install vue@^3.4 vue-router@^4 pinia@^2
 npm uninstall vuex vue-template-compiler
+
+# Remove Class Component packages (not Vue 3 compatible)
+npm uninstall vue-class-component vue-property-decorator vuex-class
 ```
 
 #### 3.2 Entry Point
@@ -117,6 +122,56 @@ function handleClick() { /* ... */ }
 | `{{ value \| filter }}` | `{{ filter(value) }}` |
 | `@click.native` | `@click` |
 
+#### 3.7 Class Component Migration
+
+Convert Class Components to Composition API:
+
+| Decorator | Vue 3 Equivalent |
+|-----------|------------------|
+| `@Component` | `<script setup>` |
+| `@Prop` | `defineProps()` |
+| `@PropSync` | `defineModel()` |
+| `@Emit` | `defineEmits()` |
+| `@Watch` | `watch()` |
+| `@Ref` | `useTemplateRef()` |
+| `@Provide/@Inject` | `provide()/inject()` |
+| `@State` (vuex-class) | `storeToRefs(store).prop` |
+| `@Getter` (vuex-class) | `storeToRefs(store).getter` |
+| `@Action` (vuex-class) | `store.actionMethod()` |
+| Class properties | `ref()` |
+| Class getters | `computed()` |
+
+```vue
+<!-- Before: Class Component -->
+<script lang="ts">
+import { Component, Vue, Prop, Emit } from 'vue-property-decorator'
+
+@Component
+export default class UserCard extends Vue {
+  @Prop({ required: true }) userId!: number
+  isEditing = false
+  
+  get displayName() { return this.name.toUpperCase() }
+  
+  @Emit()
+  save() {}
+}
+</script>
+
+<!-- After: Composition API -->
+<script setup lang="ts">
+import { ref, computed } from 'vue'
+
+const props = defineProps<{ userId: number }>()
+const emit = defineEmits<{ save: [] }>()
+
+const isEditing = ref(false)
+const displayName = computed(() => props.name.toUpperCase())
+
+function save() { emit('save') }
+</script>
+```
+
 ### Step 4: Review & Validate
 
 After migration:
@@ -128,6 +183,12 @@ grep -r "this.\$set" src/
 grep -r "this.\$on" src/
 grep -r "this.\$children" src/
 grep -r "Vue.filter" src/
+
+# Search for Class Component patterns
+grep -r "@Component" src/
+grep -r "vue-property-decorator" src/
+grep -r "vuex-class" src/
+grep -r "extends Vue" src/
 ```
 
 **Run checks:**

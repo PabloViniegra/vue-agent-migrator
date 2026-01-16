@@ -65,6 +65,9 @@ Never proceed with code changes without confirmed approval.
 ```bash
 # Remove Vue 2 specific packages
 npm uninstall vuex vue-template-compiler @vue/cli-service
+
+# Remove Class Component packages (not compatible with Vue 3)
+npm uninstall vue-class-component vue-property-decorator vuex-class
 ```
 
 ### 2. Build System Migration
@@ -308,6 +311,438 @@ export function usePagination(initialPage = 1, perPage = 10) {
 }
 ```
 
+### 6.1 Vue Class Component → Composition API Migration
+
+#### Basic Class Component Migration
+```vue
+<!-- Before: Vue Class Component -->
+<script lang="ts">
+import { Component, Vue } from 'vue-property-decorator'
+
+@Component
+export default class HelloWorld extends Vue {
+  // Class property = data
+  message: string = 'Hello'
+  count: number = 0
+
+  // Getter = computed
+  get exclamation(): string {
+    return this.message + '!'
+  }
+
+  // Method
+  increment(): void {
+    this.count++
+  }
+
+  // Lifecycle hook
+  mounted(): void {
+    console.log('Component mounted')
+  }
+}
+</script>
+
+<!-- After: Composition API with script setup -->
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
+
+// Reactive state (was class properties)
+const message = ref('Hello')
+const count = ref(0)
+
+// Computed (was getter)
+const exclamation = computed(() => message.value + '!')
+
+// Method
+function increment(): void {
+  count.value++
+}
+
+// Lifecycle hook
+onMounted(() => {
+  console.log('Component mounted')
+})
+</script>
+```
+
+#### @Prop Decorator Migration
+```vue
+<!-- Before: @Prop decorator -->
+<script lang="ts">
+import { Component, Vue, Prop } from 'vue-property-decorator'
+
+@Component
+export default class UserCard extends Vue {
+  @Prop({ required: true }) readonly userId!: number
+  @Prop({ default: 'Guest' }) readonly name!: string
+  @Prop({ type: Array, default: () => [] }) readonly roles!: string[]
+  @Prop({ validator: (v: number) => v > 0 }) readonly age!: number
+}
+</script>
+
+<!-- After: defineProps -->
+<script setup lang="ts">
+interface Props {
+  userId: number
+  name?: string
+  roles?: string[]
+  age?: number
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  name: 'Guest',
+  roles: () => []
+})
+
+// Note: validators move to runtime validation or are handled differently
+// For age validation, consider using a watcher or validation library
+</script>
+```
+
+#### @Emit Decorator Migration
+```vue
+<!-- Before: @Emit decorator -->
+<script lang="ts">
+import { Component, Vue, Emit } from 'vue-property-decorator'
+
+@Component
+export default class SearchInput extends Vue {
+  query: string = ''
+
+  @Emit()
+  search(): string {
+    return this.query
+  }
+
+  @Emit('update:modelValue')
+  updateValue(value: string): string {
+    return value
+  }
+
+  @Emit()
+  submitForm(data: FormData): FormData {
+    // Emit name derived from method name: 'submit-form'
+    return data
+  }
+}
+</script>
+
+<!-- After: defineEmits -->
+<script setup lang="ts">
+import { ref } from 'vue'
+
+const query = ref('')
+
+const emit = defineEmits<{
+  search: [query: string]
+  'update:modelValue': [value: string]
+  submitForm: [data: FormData]
+}>()
+
+function search(): void {
+  emit('search', query.value)
+}
+
+function updateValue(value: string): void {
+  emit('update:modelValue', value)
+}
+
+function submitForm(data: FormData): void {
+  emit('submitForm', data)
+}
+</script>
+```
+
+#### @Watch Decorator Migration
+```vue
+<!-- Before: @Watch decorator -->
+<script lang="ts">
+import { Component, Vue, Watch, Prop } from 'vue-property-decorator'
+
+@Component
+export default class UserProfile extends Vue {
+  @Prop() userId!: number
+  userData: User | null = null
+
+  @Watch('userId', { immediate: true, deep: false })
+  onUserIdChanged(newVal: number, oldVal: number): void {
+    this.fetchUser(newVal)
+  }
+
+  @Watch('userData', { deep: true })
+  onUserDataChanged(newVal: User): void {
+    console.log('User data changed:', newVal)
+  }
+
+  async fetchUser(id: number): Promise<void> {
+    this.userData = await api.getUser(id)
+  }
+}
+</script>
+
+<!-- After: watch() -->
+<script setup lang="ts">
+import { ref, watch } from 'vue'
+
+const props = defineProps<{
+  userId: number
+}>()
+
+const userData = ref<User | null>(null)
+
+// Watch with immediate
+watch(
+  () => props.userId,
+  async (newVal, oldVal) => {
+    await fetchUser(newVal)
+  },
+  { immediate: true }
+)
+
+// Deep watch
+watch(
+  userData,
+  (newVal) => {
+    console.log('User data changed:', newVal)
+  },
+  { deep: true }
+)
+
+async function fetchUser(id: number): Promise<void> {
+  userData.value = await api.getUser(id)
+}
+</script>
+```
+
+#### @Ref Decorator Migration
+```vue
+<!-- Before: @Ref decorator -->
+<script lang="ts">
+import { Component, Vue, Ref } from 'vue-property-decorator'
+
+@Component
+export default class FormComponent extends Vue {
+  @Ref('inputField') readonly inputRef!: HTMLInputElement
+  @Ref('formElement') readonly formRef!: HTMLFormElement
+
+  focusInput(): void {
+    this.inputRef.focus()
+  }
+
+  resetForm(): void {
+    this.formRef.reset()
+  }
+}
+</script>
+
+<template>
+  <form ref="formElement">
+    <input ref="inputField" type="text" />
+  </form>
+</template>
+
+<!-- After: useTemplateRef (Vue 3.5+) or ref -->
+<script setup lang="ts">
+import { useTemplateRef } from 'vue'
+
+// Vue 3.5+ with useTemplateRef
+const inputRef = useTemplateRef<HTMLInputElement>('inputField')
+const formRef = useTemplateRef<HTMLFormElement>('formElement')
+
+// Alternative for Vue 3.0-3.4: use ref with same name as template ref
+// const inputField = ref<HTMLInputElement | null>(null)
+// const formElement = ref<HTMLFormElement | null>(null)
+
+function focusInput(): void {
+  inputRef.value?.focus()
+}
+
+function resetForm(): void {
+  formRef.value?.reset()
+}
+</script>
+
+<template>
+  <form ref="formElement">
+    <input ref="inputField" type="text" />
+  </form>
+</template>
+```
+
+#### @PropSync and @Model Migration
+```vue
+<!-- Before: @PropSync and @Model -->
+<script lang="ts">
+import { Component, Vue, PropSync, Model } from 'vue-property-decorator'
+
+@Component
+export default class ToggleSwitch extends Vue {
+  // Two-way binding with .sync modifier
+  @PropSync('checked', { type: Boolean }) syncedChecked!: boolean
+
+  // Custom v-model
+  @Model('change', { type: String }) readonly value!: string
+}
+</script>
+
+<!-- After: defineModel (Vue 3.4+) -->
+<script setup lang="ts">
+// For @PropSync - use defineModel
+const checked = defineModel<boolean>('checked', { default: false })
+
+// For @Model - use defineModel (default model)
+const modelValue = defineModel<string>({ default: '' })
+
+// Usage: checked.value = true (automatically emits update:checked)
+// Usage: modelValue.value = 'new' (automatically emits update:modelValue)
+</script>
+```
+
+#### @Provide/@Inject Migration
+```vue
+<!-- Before: @Provide/@Inject -->
+<script lang="ts">
+import { Component, Vue, Provide, Inject } from 'vue-property-decorator'
+
+// Parent component
+@Component
+export default class ParentComponent extends Vue {
+  @Provide() theme: string = 'dark'
+  @Provide('apiService') api: ApiService = new ApiService()
+}
+
+// Child component
+@Component
+export default class ChildComponent extends Vue {
+  @Inject() readonly theme!: string
+  @Inject('apiService') readonly api!: ApiService
+  @Inject({ from: 'optional', default: 'fallback' }) readonly optionalValue!: string
+}
+</script>
+
+<!-- After: provide/inject -->
+<script setup lang="ts">
+import { provide, inject } from 'vue'
+import type { InjectionKey } from 'vue'
+
+// Define typed injection keys (recommended)
+const themeKey: InjectionKey<string> = Symbol('theme')
+const apiKey: InjectionKey<ApiService> = Symbol('apiService')
+
+// Parent component
+const theme = ref('dark')
+const api = new ApiService()
+
+provide(themeKey, theme)
+provide(apiKey, api)
+
+// Child component
+const theme = inject(themeKey, 'light') // with default
+const api = inject(apiKey)! // assert non-null if required
+const optionalValue = inject('optional', 'fallback')
+</script>
+```
+
+#### vuex-class → Pinia Migration
+```vue
+<!-- Before: vuex-class decorators -->
+<script lang="ts">
+import { Component, Vue } from 'vue-property-decorator'
+import { State, Getter, Mutation, Action, namespace } from 'vuex-class'
+
+const userModule = namespace('user')
+
+@Component
+export default class UserDashboard extends Vue {
+  // Root state/getters
+  @State('isLoading') isLoading!: boolean
+  @Getter('isAuthenticated') isAuth!: boolean
+
+  // Namespaced module
+  @userModule.State('currentUser') user!: User
+  @userModule.Getter('fullName') fullName!: string
+  @userModule.Mutation('SET_USER') setUser!: (user: User) => void
+  @userModule.Action('fetchUser') fetchUser!: () => Promise<void>
+
+  mounted(): void {
+    this.fetchUser()
+  }
+}
+</script>
+
+<!-- After: Pinia stores -->
+<script setup lang="ts">
+import { onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useAppStore } from '@/stores/app'
+import { useUserStore } from '@/stores/user'
+
+// Root store
+const appStore = useAppStore()
+const { isLoading } = storeToRefs(appStore)
+
+// User store (was namespaced module)
+const userStore = useUserStore()
+const { currentUser: user, fullName, isAuthenticated: isAuth } = storeToRefs(userStore)
+
+// Actions are called directly
+onMounted(async () => {
+  await userStore.fetchUser()
+})
+
+// Mutations are now just methods on the store
+function updateUser(newUser: User): void {
+  userStore.setUser(newUser) // or userStore.user = newUser
+}
+</script>
+```
+
+#### Class Component with Mixins Migration
+```vue
+<!-- Before: Class with mixins -->
+<script lang="ts">
+import { Component, Mixins } from 'vue-property-decorator'
+import { PaginationMixin } from '@/mixins/pagination'
+import { LoadingMixin } from '@/mixins/loading'
+
+@Component
+export default class UserList extends Mixins(PaginationMixin, LoadingMixin) {
+  users: User[] = []
+
+  async fetchUsers(): Promise<void> {
+    this.setLoading(true)  // from LoadingMixin
+    try {
+      this.users = await api.getUsers(this.currentPage, this.itemsPerPage)  // from PaginationMixin
+    } finally {
+      this.setLoading(false)
+    }
+  }
+}
+</script>
+
+<!-- After: Composables -->
+<script setup lang="ts">
+import { ref } from 'vue'
+import { usePagination } from '@/composables/usePagination'
+import { useLoading } from '@/composables/useLoading'
+
+const users = ref<User[]>([])
+
+// Use composables instead of mixins
+const { currentPage, itemsPerPage, nextPage, prevPage } = usePagination()
+const { isLoading, setLoading } = useLoading()
+
+async function fetchUsers(): Promise<void> {
+  setLoading(true)
+  try {
+    users.value = await api.getUsers(currentPage.value, itemsPerPage.value)
+  } finally {
+    setLoading(false)
+  }
+}
+</script>
+```
+
 ### 7. Filter → Method/Computed Conversion
 
 ```vue
@@ -400,7 +835,10 @@ emitter.on('user-updated', handler)
 - [ ] Remove Vuex completely
 
 ### Phase 4: Component Migration
-- [ ] Convert to script setup syntax
+- [ ] Convert Options API to script setup syntax
+- [ ] Convert Class Components to Composition API
+- [ ] Migrate vue-property-decorator to Vue 3 macros
+- [ ] Migrate vuex-class to Pinia stores
 - [ ] Replace mixins with composables
 - [ ] Remove filters, use methods
 - [ ] Update v-model usage

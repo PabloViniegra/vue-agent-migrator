@@ -12,6 +12,8 @@ Before making ANY code changes:
    - Check `package.json` for Vue version and dependencies
    - Identify Vuex stores and modules
    - Find components using Options API, mixins, filters
+   - Detect Vue Class Components (`vue-class-component`, `vue-property-decorator`)
+   - Identify `vuex-class` decorators usage
    - Catalog Vue 2 specific patterns
 
 2. **Produce a Migration Plan** including:
@@ -43,6 +45,8 @@ Execute the approved plan:
    - Core framework (Vue 3, Router 4)
    - State management (Vuex → Pinia)
    - Components (Options API → Composition API)
+   - Class Components (vue-property-decorator → Composition API)
+   - vuex-class decorators → Pinia stores
    - Build system (Vue CLI → Vite if applicable)
 
 3. **Report progress** after each major change
@@ -143,6 +147,99 @@ const formatDate = (d) => new Date(d).toLocaleDateString()
 </script>
 ```
 
+### Vue Class Component → Composition API
+
+```vue
+<!-- Before: Class Component -->
+<script lang="ts">
+import { Component, Vue, Prop, Emit, Watch } from 'vue-property-decorator'
+
+@Component
+export default class UserCard extends Vue {
+  @Prop({ required: true }) readonly userId!: number
+  @Prop({ default: 'Guest' }) readonly name!: string
+  
+  isEditing = false
+  
+  get displayName(): string {
+    return this.name.toUpperCase()
+  }
+  
+  @Emit()
+  save(): void {}
+  
+  @Watch('userId', { immediate: true })
+  onUserIdChanged(val: number): void {
+    this.fetchUser(val)
+  }
+}
+</script>
+
+<!-- After: Composition API -->
+<script setup lang="ts">
+import { ref, computed, watch } from 'vue'
+
+const props = withDefaults(defineProps<{
+  userId: number
+  name?: string
+}>(), {
+  name: 'Guest'
+})
+
+const emit = defineEmits<{ save: [] }>()
+
+const isEditing = ref(false)
+const displayName = computed(() => props.name.toUpperCase())
+
+function save(): void {
+  emit('save')
+}
+
+watch(() => props.userId, (val) => fetchUser(val), { immediate: true })
+</script>
+```
+
+### vuex-class → Pinia
+
+```vue
+<!-- Before: vuex-class -->
+<script lang="ts">
+import { Component, Vue } from 'vue-property-decorator'
+import { State, Getter, Action, namespace } from 'vuex-class'
+
+const userModule = namespace('user')
+
+@Component
+export default class Dashboard extends Vue {
+  @userModule.State('currentUser') user!: User
+  @userModule.Action('fetchUser') fetchUser!: () => Promise<void>
+}
+</script>
+
+<!-- After: Pinia -->
+<script setup lang="ts">
+import { storeToRefs } from 'pinia'
+import { useUserStore } from '@/stores/user'
+
+const userStore = useUserStore()
+const { currentUser: user } = storeToRefs(userStore)
+</script>
+```
+
+### Class Component Decorator Mapping
+
+| Decorator | Vue 3 Equivalent |
+|-----------|------------------|
+| `@Component` | `<script setup>` |
+| `@Prop` | `defineProps()` |
+| `@PropSync` | `defineModel()` |
+| `@Emit` | `defineEmits()` |
+| `@Watch` | `watch()` |
+| `@Ref` | `useTemplateRef()` |
+| `@Provide/@Inject` | `provide()/inject()` |
+| Class properties | `ref()` |
+| Class getters | `computed()` |
+
 ## Vue 3 Breaking Changes Checklist
 
 - [ ] `$on`, `$off`, `$once` removed (use mitt)
@@ -154,6 +251,19 @@ const formatDate = (d) => new Date(d).toLocaleDateString()
 - [ ] Async components use `defineAsyncComponent`
 - [ ] Transition class names changed
 - [ ] Custom directives API changed
+
+## Class Components Breaking Changes
+
+- [ ] `vue-class-component` not compatible with Vue 3 - remove package
+- [ ] `vue-property-decorator` not compatible - remove package
+- [ ] `vuex-class` not compatible - remove package
+- [ ] All `@Component` decorators converted to `<script setup>`
+- [ ] All `@Prop` decorators converted to `defineProps()`
+- [ ] All `@Emit` decorators converted to `defineEmits()`
+- [ ] All `@Watch` decorators converted to `watch()`
+- [ ] All `@Ref` decorators converted to `useTemplateRef()`
+- [ ] Class properties converted to `ref()` or `reactive()`
+- [ ] Class getters converted to `computed()`
 
 ## Out of Scope
 

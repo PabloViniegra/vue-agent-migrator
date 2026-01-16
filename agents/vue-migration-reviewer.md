@@ -76,6 +76,26 @@ Vue.filter()                  // Filters removed
 Vue.directive()               // Syntax changed
 ```
 
+**Leftover Class Component Patterns:**
+```typescript
+// BAD: Class component patterns that should be migrated
+import { Component, Vue } from 'vue-property-decorator'
+import { Prop, Emit, Watch, Ref } from 'vue-property-decorator'
+import { State, Getter, Action, Mutation } from 'vuex-class'
+
+@Component  // Should not exist
+export default class MyComponent extends Vue {  // Should not exist
+  @Prop() readonly value!: string  // Use defineProps
+  @Emit() onChange(): void {}      // Use defineEmits
+  @Watch('value') onValueChange(): void {}  // Use watch()
+  @Ref('input') inputRef!: HTMLInputElement  // Use useTemplateRef
+}
+
+// Also check for class component mixins
+import { Mixins } from 'vue-property-decorator'
+export default class MyComponent extends Mixins(MixinA, MixinB) {}  // Should not exist
+```
+
 ### 2. Pinia Store Review
 
 #### Store Structure Validation
@@ -116,6 +136,9 @@ export const useCounterStore = defineStore('counter', () => {
 | vuex | NOT present | |
 | vue-template-compiler | NOT present | |
 | @vue/cli-service | NOT present (if migrated to Vite) | |
+| vue-class-component | NOT present | |
+| vue-property-decorator | NOT present | |
+| vuex-class | NOT present | |
 
 **Scripts Validation:**
 ```json
@@ -319,6 +342,23 @@ Issues that SHOULD be addressed but don't block approval:
 - [ ] No `$children` usage
 - [ ] No `$listeners` usage (check `$attrs`)
 - [ ] No `$scopedSlots` (use unified `slots`)
+
+### Vue Class Component Migration Checklist
+
+- [ ] No `vue-class-component` imports or `@Component` decorators
+- [ ] No `vue-property-decorator` imports (`@Prop`, `@Emit`, `@Watch`, etc.)
+- [ ] No `vuex-class` imports (`@State`, `@Getter`, `@Mutation`, `@Action`)
+- [ ] No `extends Vue` or `extends Mixins(...)` patterns
+- [ ] All class properties converted to `ref()` or `reactive()`
+- [ ] All class getters converted to `computed()`
+- [ ] All `@Prop` converted to `defineProps()`
+- [ ] All `@Emit` converted to `defineEmits()`
+- [ ] All `@Watch` converted to `watch()` or `watchEffect()`
+- [ ] All `@Ref` converted to `useTemplateRef()` or `ref()`
+- [ ] All `@PropSync` / `@Model` converted to `defineModel()`
+- [ ] All `@Provide` / `@Inject` converted to `provide()` / `inject()`
+- [ ] No class-based mixins (converted to composables)
+- [ ] TypeScript types properly migrated from class to interface/type
 
 ### Pinia Compliance Checklist
 

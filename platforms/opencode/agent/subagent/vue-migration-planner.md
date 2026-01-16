@@ -45,10 +45,32 @@ Identify and catalog:
 - **State Management**: Vuex stores, modules, patterns
 - **Routing**: Vue Router configuration, guards, meta
 - **Components**: Options API usage, mixins, extends
+- **Class Components**: Vue Class Components with `vue-property-decorator`
 - **Global Properties**: Vue.prototype additions, plugins
 - **Filters**: Custom filters (removed in Vue 3)
 - **Event Bus**: $on, $off, $emit patterns
 - **Render Functions**: h() usage differences
+
+### 2.1 Vue Class Components Detection
+
+If the project uses `vue-class-component` or `vue-property-decorator`, identify:
+
+| Decorator | Purpose | Migration Target |
+|-----------|---------|------------------|
+| `@Component` | Class component definition | `<script setup>` or `defineComponent` |
+| `@Prop` | Property declaration | `defineProps()` |
+| `@PropSync` | Two-way prop binding | `defineModel()` or `defineProps` + `emit` |
+| `@Emit` | Event emission | `defineEmits()` |
+| `@Watch` | Property watchers | `watch()` / `watchEffect()` |
+| `@Ref` | Template refs | `ref()` + `useTemplateRef()` |
+| `@Provide` / `@Inject` | Dependency injection | `provide()` / `inject()` |
+| `@Model` | v-model customization | `defineModel()` |
+
+**Key Metrics to Add for Class Components:**
+- Total Class Components: [count]
+- Components using `vue-property-decorator`: [count]
+- Components using `vuex-class`: [count]
+- Class-based Mixins: [count]
 
 ### 3. Dependency Audit
 
@@ -102,6 +124,9 @@ You MUST produce a **Migration Analysis & Trade-offs Document** with these secti
 - Mixins: [count]
 - Custom Filters: [count]
 - Third-party Dependencies: [count]
+- Class Components (vue-class-component): [count]
+- Components with vue-property-decorator: [count]
+- Components with vuex-class: [count]
 
 ## 3. Migration Strategy
 
@@ -122,6 +147,9 @@ You MUST produce a **Migration Analysis & Trade-offs Document** with these secti
 
 ### Component Migration
 - [ ] Options API → Composition API
+- [ ] Class Components → Composition API (`<script setup>`)
+- [ ] vue-property-decorator → Vue 3 macros (defineProps, defineEmits, etc.)
+- [ ] vuex-class → Pinia composables
 - [ ] Mixins → Composables
 - [ ] Filters → Methods/Computed
 
@@ -207,6 +235,16 @@ You MUST produce a **Migration Analysis & Trade-offs Document** with these secti
 - [ ] v-if/v-for precedence changed
 - [ ] Array watching behavior changed
 - [ ] Props default factory `this` access removed
+
+### Vue Class Components Breaking Changes
+
+- [ ] `vue-class-component` not compatible with Vue 3 (unofficial fork exists but deprecated)
+- [ ] `vue-property-decorator` not maintained for Vue 3
+- [ ] `vuex-class` not compatible with Vue 3/Pinia
+- [ ] Class component `this` context differs from Composition API
+- [ ] Mixins inheritance chains may be complex to untangle
+- [ ] `@PropSync` pattern needs explicit emit in Vue 3
+- [ ] `@Model` decorator replaced by `defineModel()`
 
 ### Vuex → Pinia Considerations
 

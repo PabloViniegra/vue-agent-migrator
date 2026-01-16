@@ -74,6 +74,9 @@ Never proceed with code changes without confirmed approval.
 ```bash
 # Remove Vue 2 specific packages
 npm uninstall vuex vue-template-compiler @vue/cli-service
+
+# Remove Class Component packages (not compatible with Vue 3)
+npm uninstall vue-class-component vue-property-decorator vuex-class
 ```
 
 ### 2. Build System Migration
@@ -317,6 +320,129 @@ export function usePagination(initialPage = 1, perPage = 10) {
 }
 ```
 
+### 6.1 Vue Class Component → Composition API Migration
+
+#### Basic Class Component Migration
+```vue
+<!-- Before: Vue Class Component -->
+<script lang="ts">
+import { Component, Vue } from 'vue-property-decorator'
+
+@Component
+export default class HelloWorld extends Vue {
+  message: string = 'Hello'
+  count: number = 0
+
+  get exclamation(): string {
+    return this.message + '!'
+  }
+
+  increment(): void {
+    this.count++
+  }
+
+  mounted(): void {
+    console.log('Component mounted')
+  }
+}
+</script>
+
+<!-- After: Composition API with script setup -->
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
+
+const message = ref('Hello')
+const count = ref(0)
+
+const exclamation = computed(() => message.value + '!')
+
+function increment(): void {
+  count.value++
+}
+
+onMounted(() => {
+  console.log('Component mounted')
+})
+</script>
+```
+
+#### @Prop Decorator Migration
+```vue
+<!-- Before: @Prop decorator -->
+<script lang="ts">
+import { Component, Vue, Prop } from 'vue-property-decorator'
+
+@Component
+export default class UserCard extends Vue {
+  @Prop({ required: true }) readonly userId!: number
+  @Prop({ default: 'Guest' }) readonly name!: string
+}
+</script>
+
+<!-- After: defineProps -->
+<script setup lang="ts">
+const props = withDefaults(defineProps<{
+  userId: number
+  name?: string
+}>(), {
+  name: 'Guest'
+})
+</script>
+```
+
+#### @Emit Decorator Migration
+```vue
+<!-- Before: @Emit decorator -->
+<script lang="ts">
+import { Component, Vue, Emit } from 'vue-property-decorator'
+
+@Component
+export default class SearchInput extends Vue {
+  @Emit()
+  search(): string {
+    return this.query
+  }
+}
+</script>
+
+<!-- After: defineEmits -->
+<script setup lang="ts">
+const emit = defineEmits<{
+  search: [query: string]
+}>()
+
+function search(): void {
+  emit('search', query.value)
+}
+</script>
+```
+
+#### vuex-class → Pinia Migration
+```vue
+<!-- Before: vuex-class decorators -->
+<script lang="ts">
+import { Component, Vue } from 'vue-property-decorator'
+import { State, Getter, Action, namespace } from 'vuex-class'
+
+const userModule = namespace('user')
+
+@Component
+export default class UserDashboard extends Vue {
+  @userModule.State('currentUser') user!: User
+  @userModule.Action('fetchUser') fetchUser!: () => Promise<void>
+}
+</script>
+
+<!-- After: Pinia stores -->
+<script setup lang="ts">
+import { storeToRefs } from 'pinia'
+import { useUserStore } from '@/stores/user'
+
+const userStore = useUserStore()
+const { currentUser: user } = storeToRefs(userStore)
+</script>
+```
+
 ### 7. Filter → Method/Computed Conversion
 
 ```vue
@@ -409,7 +535,10 @@ emitter.on('user-updated', handler)
 - [ ] Remove Vuex completely
 
 ### Phase 4: Component Migration
-- [ ] Convert to script setup syntax
+- [ ] Convert Options API to script setup syntax
+- [ ] Convert Class Components to Composition API
+- [ ] Migrate vue-property-decorator to Vue 3 macros
+- [ ] Migrate vuex-class to Pinia stores
 - [ ] Replace mixins with composables
 - [ ] Remove filters, use methods
 - [ ] Update v-model usage
