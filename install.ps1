@@ -84,16 +84,16 @@ function Install-ClaudeCode {
 function Install-GitHubCopilot {
     Write-Step "Installing for GitHub Copilot..."
 
-    $githubDir = Join-Path $TargetPath ".github"
-    New-Item -ItemType Directory -Force -Path $githubDir | Out-Null
+    $agentsDir = Join-Path $TargetPath ".github\agents"
+    New-Item -ItemType Directory -Force -Path $agentsDir | Out-Null
 
-    $source = Join-Path $ScriptDir "platforms\github-copilot\copilot-instructions.md"
-    if (Test-Path $source) {
-        Copy-Item $source -Destination $githubDir -Force
+    $sourceAgents = Join-Path $ScriptDir "platforms\github-copilot\agents\*.md"
+    if (Test-Path $sourceAgents) {
+        Get-ChildItem $sourceAgents | Copy-Item -Destination $agentsDir -Force
     }
 
     Write-Success "GitHub Copilot configuration installed"
-    Write-Host "    Instructions: $githubDir\copilot-instructions.md"
+    Write-Host "    Agents: $agentsDir"
     Write-Host ""
     Write-Host "    Usage: Ask Copilot to 'migrate to Vue 3'"
 }
@@ -101,33 +101,47 @@ function Install-GitHubCopilot {
 function Install-Codex {
     Write-Step "Installing for Codex CLI..."
 
-    $codexDir = Join-Path $TargetPath ".codex"
-    New-Item -ItemType Directory -Force -Path $codexDir | Out-Null
+    # Create skill directories
+    $skillsDir = Join-Path $TargetPath ".codex\skills"
+    New-Item -ItemType Directory -Force -Path "$skillsDir\vue-migrator" | Out-Null
+    New-Item -ItemType Directory -Force -Path "$skillsDir\vue-migration-planner" | Out-Null
+    New-Item -ItemType Directory -Force -Path "$skillsDir\vue-migration-executor" | Out-Null
+    New-Item -ItemType Directory -Force -Path "$skillsDir\vue-migration-reviewer" | Out-Null
 
-    $source = Join-Path $ScriptDir "platforms\codex\AGENTS.md"
-    if (Test-Path $source) {
-        Copy-Item $source -Destination $codexDir -Force
+    # Copy skill files
+    $skills = @("vue-migrator", "vue-migration-planner", "vue-migration-executor", "vue-migration-reviewer")
+    foreach ($skill in $skills) {
+        $source = Join-Path $ScriptDir "platforms\codex\skills\$skill\SKILL.md"
+        $dest = Join-Path $skillsDir "$skill\SKILL.md"
+        if (Test-Path $source) {
+            Copy-Item $source -Destination $dest -Force
+        }
     }
 
     Write-Success "Codex CLI configuration installed"
-    Write-Host "    Instructions: $codexDir\AGENTS.md"
+    Write-Host "    Skills: $skillsDir\"
+    Write-Host "      - vue-migrator"
+    Write-Host "      - vue-migration-planner"
+    Write-Host "      - vue-migration-executor"
+    Write-Host "      - vue-migration-reviewer"
     Write-Host ""
     Write-Host "    Usage: Ask Codex to 'migrate to Vue 3'"
+    Write-Host "    Note: Codex uses skills (subagent → skill mapping)"
 }
 
 function Install-Gemini {
     Write-Step "Installing for Gemini CLI..."
 
-    $geminiDir = Join-Path $TargetPath ".gemini"
-    New-Item -ItemType Directory -Force -Path $geminiDir | Out-Null
+    $agentsDir = Join-Path $TargetPath ".gemini\agents"
+    New-Item -ItemType Directory -Force -Path $agentsDir | Out-Null
 
-    $source = Join-Path $ScriptDir "platforms\gemini\GEMINI.md"
-    if (Test-Path $source) {
-        Copy-Item $source -Destination $geminiDir -Force
+    $sourceAgents = Join-Path $ScriptDir "platforms\gemini\agents\*.md"
+    if (Test-Path $sourceAgents) {
+        Get-ChildItem $sourceAgents | Copy-Item -Destination $agentsDir -Force
     }
 
     Write-Success "Gemini CLI configuration installed"
-    Write-Host "    Instructions: $geminiDir\GEMINI.md"
+    Write-Host "    Agents: $agentsDir"
     Write-Host ""
     Write-Host "    Usage: Ask Gemini to 'migrate to Vue 3'"
 }
@@ -135,26 +149,23 @@ function Install-Gemini {
 function Install-OpenCode {
     Write-Step "Installing for OpenCode..."
 
-    $opencodeDir = Join-Path $TargetPath ".opencode\agent"
-    New-Item -ItemType Directory -Force -Path $opencodeDir | Out-Null
+    $agentsDir = Join-Path $TargetPath ".opencode\agents"
+    New-Item -ItemType Directory -Force -Path $agentsDir | Out-Null
 
-    # Copy primary agents
-    $sourceAgents = Join-Path $ScriptDir "platforms\opencode\agent\*.md"
+    # Copy all agents (both primary and subagents)
+    $sourceAgents = Join-Path $ScriptDir "platforms\opencode\agents\*.md"
     if (Test-Path $sourceAgents) {
-        Get-ChildItem $sourceAgents | Copy-Item -Destination $opencodeDir -Force
-    }
-
-    # Copy subagents
-    $sourceSubagents = Join-Path $ScriptDir "platforms\opencode\agent\subagent\*.md"
-    if (Test-Path $sourceSubagents) {
-        Get-ChildItem $sourceSubagents | Copy-Item -Destination $opencodeDir -Force
+        Get-ChildItem $sourceAgents | Copy-Item -Destination $agentsDir -Force
     }
 
     Write-Success "OpenCode configuration installed"
-    Write-Host "    Agents:   $opencodeDir"
-    Write-Host "    Subagents: (included in agent directory)"
+    Write-Host "    Agents: $agentsDir"
+    Write-Host "      - vue-migrator.md (mode: primary)"
+    Write-Host "      - vue-migration-planner.md (mode: subagent)"
+    Write-Host "      - vue-migration-executor.md (mode: subagent)"
+    Write-Host "      - vue-migration-reviewer.md (mode: subagent)"
     Write-Host ""
-    Write-Host "    Usage: Ask OpenCode to 'migrate vue'"
+    Write-Host "    Usage: Ask OpenCode to 'migrate vue' or use @vue-migrator"
     Write-Host "    Subagents: @vue-migration-planner, @vue-migration-executor, @vue-migration-reviewer"
 }
 

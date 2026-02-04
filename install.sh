@@ -92,12 +92,12 @@ install_claude_code() {
 install_github_copilot() {
     print_step "Installing for GitHub Copilot..."
 
-    mkdir -p "$TARGET_DIR/.github"
+    mkdir -p "$TARGET_DIR/.github/agents"
 
-    cp "$SCRIPT_DIR/platforms/github-copilot/copilot-instructions.md" "$TARGET_DIR/.github/" 2>/dev/null || true
+    cp "$SCRIPT_DIR/platforms/github-copilot/agents/"*.md "$TARGET_DIR/.github/agents/" 2>/dev/null || true
 
     print_success "GitHub Copilot configuration installed"
-    echo "    Instructions: $TARGET_DIR/.github/copilot-instructions.md"
+    echo "    Agents: $TARGET_DIR/.github/agents/"
     echo ""
     echo -e "    ${CYAN}Usage: Ask Copilot to ${YELLOW}\"migrate to Vue 3\"${NC}"
 }
@@ -105,25 +105,38 @@ install_github_copilot() {
 install_codex() {
     print_step "Installing for Codex CLI..."
 
-    mkdir -p "$TARGET_DIR/.codex"
+    # Create skill directories
+    mkdir -p "$TARGET_DIR/.codex/skills/vue-migrator"
+    mkdir -p "$TARGET_DIR/.codex/skills/vue-migration-planner"
+    mkdir -p "$TARGET_DIR/.codex/skills/vue-migration-executor"
+    mkdir -p "$TARGET_DIR/.codex/skills/vue-migration-reviewer"
 
-    cp "$SCRIPT_DIR/platforms/codex/AGENTS.md" "$TARGET_DIR/.codex/" 2>/dev/null || true
+    # Copy skill files
+    cp "$SCRIPT_DIR/platforms/codex/skills/vue-migrator/SKILL.md" "$TARGET_DIR/.codex/skills/vue-migrator/" 2>/dev/null || true
+    cp "$SCRIPT_DIR/platforms/codex/skills/vue-migration-planner/SKILL.md" "$TARGET_DIR/.codex/skills/vue-migration-planner/" 2>/dev/null || true
+    cp "$SCRIPT_DIR/platforms/codex/skills/vue-migration-executor/SKILL.md" "$TARGET_DIR/.codex/skills/vue-migration-executor/" 2>/dev/null || true
+    cp "$SCRIPT_DIR/platforms/codex/skills/vue-migration-reviewer/SKILL.md" "$TARGET_DIR/.codex/skills/vue-migration-reviewer/" 2>/dev/null || true
 
     print_success "Codex CLI configuration installed"
-    echo "    Instructions: $TARGET_DIR/.codex/AGENTS.md"
+    echo "    Skills: $TARGET_DIR/.codex/skills/"
+    echo "      - vue-migrator"
+    echo "      - vue-migration-planner"
+    echo "      - vue-migration-executor"
+    echo "      - vue-migration-reviewer"
     echo ""
     echo -e "    ${CYAN}Usage: Ask Codex to ${YELLOW}\"migrate to Vue 3\"${NC}"
+    echo -e "    ${CYAN}Note: Codex uses skills (subagent → skill mapping)${NC}"
 }
 
 install_gemini() {
     print_step "Installing for Gemini CLI..."
 
-    mkdir -p "$TARGET_DIR/.gemini"
+    mkdir -p "$TARGET_DIR/.gemini/agents"
 
-    cp "$SCRIPT_DIR/platforms/gemini/GEMINI.md" "$TARGET_DIR/.gemini/" 2>/dev/null || true
+    cp "$SCRIPT_DIR/platforms/gemini/agents/"*.md "$TARGET_DIR/.gemini/agents/" 2>/dev/null || true
 
     print_success "Gemini CLI configuration installed"
-    echo "    Instructions: $TARGET_DIR/.gemini/GEMINI.md"
+    echo "    Agents: $TARGET_DIR/.gemini/agents/"
     echo ""
     echo -e "    ${CYAN}Usage: Ask Gemini to ${YELLOW}\"migrate to Vue 3\"${NC}"
 }
@@ -131,19 +144,19 @@ install_gemini() {
 install_opencode() {
     print_step "Installing for OpenCode..."
 
-    mkdir -p "$TARGET_DIR/.opencode/agent"
+    mkdir -p "$TARGET_DIR/.opencode/agents"
 
-    # Copy primary agents
-    cp "$SCRIPT_DIR/platforms/opencode/agent/"*.md "$TARGET_DIR/.opencode/agent/" 2>/dev/null || true
-
-    # Copy subagents
-    cp "$SCRIPT_DIR/platforms/opencode/agent/subagent/"*.md "$TARGET_DIR/.opencode/agent/" 2>/dev/null || true
+    # Copy all agents (both primary and subagents)
+    cp "$SCRIPT_DIR/platforms/opencode/agents/"*.md "$TARGET_DIR/.opencode/agents/" 2>/dev/null || true
 
     print_success "OpenCode configuration installed"
-    echo "    Agents:   $TARGET_DIR/.opencode/agent/"
-    echo "    Subagents: (included in agent directory)"
+    echo "    Agents: $TARGET_DIR/.opencode/agents/"
+    echo "      - vue-migrator.md (mode: primary)"
+    echo "      - vue-migration-planner.md (mode: subagent)"
+    echo "      - vue-migration-executor.md (mode: subagent)"
+    echo "      - vue-migration-reviewer.md (mode: subagent)"
     echo ""
-    echo -e "    ${CYAN}Usage: Ask OpenCode to ${YELLOW}\"migrate vue\"${NC}"
+    echo -e "    ${CYAN}Usage: Ask OpenCode to ${YELLOW}\"migrate vue\"${NC} or use ${YELLOW}@vue-migrator${NC}"
     echo -e "    ${CYAN}Subagents: @vue-migration-planner, @vue-migration-executor, @vue-migration-reviewer${NC}"
 }
 

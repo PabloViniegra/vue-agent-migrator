@@ -89,43 +89,56 @@ goto :done
 :copilot
 echo.
 echo Installing for GitHub Copilot...
-if not exist "%TARGET_DIR%\.github" mkdir "%TARGET_DIR%\.github"
-copy /Y "%SCRIPT_DIR%platforms\github-copilot\copilot-instructions.md" "%TARGET_DIR%\.github\" >nul 2>&1
+if not exist "%TARGET_DIR%\.github\agents" mkdir "%TARGET_DIR%\.github\agents"
+xcopy /Y /Q "%SCRIPT_DIR%platforms\github-copilot\agents\*" "%TARGET_DIR%\.github\agents\" >nul 2>&1
 echo [OK] GitHub Copilot configuration installed
-echo     Instructions: %TARGET_DIR%\.github\copilot-instructions.md
+echo     Agents: %TARGET_DIR%\.github\agents\
 echo     Usage: Ask Copilot to "migrate to Vue 3"
 goto :done
 
 :codex
 echo.
 echo Installing for Codex CLI...
-if not exist "%TARGET_DIR%\.codex" mkdir "%TARGET_DIR%\.codex"
-copy /Y "%SCRIPT_DIR%platforms\codex\AGENTS.md" "%TARGET_DIR%\.codex\" >nul 2>&1
+if not exist "%TARGET_DIR%\.codex\skills\vue-migrator" mkdir "%TARGET_DIR%\.codex\skills\vue-migrator"
+if not exist "%TARGET_DIR%\.codex\skills\vue-migration-planner" mkdir "%TARGET_DIR%\.codex\skills\vue-migration-planner"
+if not exist "%TARGET_DIR%\.codex\skills\vue-migration-executor" mkdir "%TARGET_DIR%\.codex\skills\vue-migration-executor"
+if not exist "%TARGET_DIR%\.codex\skills\vue-migration-reviewer" mkdir "%TARGET_DIR%\.codex\skills\vue-migration-reviewer"
+copy /Y "%SCRIPT_DIR%platforms\codex\skills\vue-migrator\SKILL.md" "%TARGET_DIR%\.codex\skills\vue-migrator\" >nul 2>&1
+copy /Y "%SCRIPT_DIR%platforms\codex\skills\vue-migration-planner\SKILL.md" "%TARGET_DIR%\.codex\skills\vue-migration-planner\" >nul 2>&1
+copy /Y "%SCRIPT_DIR%platforms\codex\skills\vue-migration-executor\SKILL.md" "%TARGET_DIR%\.codex\skills\vue-migration-executor\" >nul 2>&1
+copy /Y "%SCRIPT_DIR%platforms\codex\skills\vue-migration-reviewer\SKILL.md" "%TARGET_DIR%\.codex\skills\vue-migration-reviewer\" >nul 2>&1
 echo [OK] Codex CLI configuration installed
-echo     Instructions: %TARGET_DIR%\.codex\AGENTS.md
+echo     Skills: %TARGET_DIR%\.codex\skills\
+echo       - vue-migrator
+echo       - vue-migration-planner
+echo       - vue-migration-executor
+echo       - vue-migration-reviewer
 echo     Usage: Ask Codex to "migrate to Vue 3"
+echo     Note: Codex uses skills (subagent -^> skill mapping)
 goto :done
 
 :gemini
 echo.
 echo Installing for Gemini CLI...
-if not exist "%TARGET_DIR%\.gemini" mkdir "%TARGET_DIR%\.gemini"
-copy /Y "%SCRIPT_DIR%platforms\gemini\GEMINI.md" "%TARGET_DIR%\.gemini\" >nul 2>&1
+if not exist "%TARGET_DIR%\.gemini\agents" mkdir "%TARGET_DIR%\.gemini\agents"
+xcopy /Y /Q "%SCRIPT_DIR%platforms\gemini\agents\*" "%TARGET_DIR%\.gemini\agents\" >nul 2>&1
 echo [OK] Gemini CLI configuration installed
-echo     Instructions: %TARGET_DIR%\.gemini\GEMINI.md
+echo     Agents: %TARGET_DIR%\.gemini\agents\
 echo     Usage: Ask Gemini to "migrate to Vue 3"
 goto :done
 
 :opencode
 echo.
 echo Installing for OpenCode...
-if not exist "%TARGET_DIR%\.opencode\agent" mkdir "%TARGET_DIR%\.opencode\agent"
-xcopy /Y /Q "%SCRIPT_DIR%platforms\opencode\agent\*.md" "%TARGET_DIR%\.opencode\agent\" >nul 2>&1
-xcopy /Y /Q "%SCRIPT_DIR%platforms\opencode\agent\subagent\*.md" "%TARGET_DIR%\.opencode\agent\" >nul 2>&1
+if not exist "%TARGET_DIR%\.opencode\agents" mkdir "%TARGET_DIR%\.opencode\agents"
+xcopy /Y /Q "%SCRIPT_DIR%platforms\opencode\agents\*.md" "%TARGET_DIR%\.opencode\agents\" >nul 2>&1
 echo [OK] OpenCode configuration installed
-echo     Agents:   %TARGET_DIR%\.opencode\agent\
-echo     Subagents: (included in agent directory)
-echo     Usage: Ask OpenCode to "migrate vue"
+echo     Agents: %TARGET_DIR%\.opencode\agents\
+echo       - vue-migrator.md (mode: primary)
+echo       - vue-migration-planner.md (mode: subagent)
+echo       - vue-migration-executor.md (mode: subagent)
+echo       - vue-migration-reviewer.md (mode: subagent)
+echo     Usage: Ask OpenCode to "migrate vue" or use @vue-migrator
 echo     Subagents: @vue-migration-planner, @vue-migration-executor, @vue-migration-reviewer
 goto :done
 
@@ -151,27 +164,32 @@ echo   [OK] Claude Code
 goto :eof
 
 :copilot_silent
-if not exist "%TARGET_DIR%\.github" mkdir "%TARGET_DIR%\.github"
-copy /Y "%SCRIPT_DIR%platforms\github-copilot\copilot-instructions.md" "%TARGET_DIR%\.github\" >nul 2>&1
+if not exist "%TARGET_DIR%\.github\agents" mkdir "%TARGET_DIR%\.github\agents"
+xcopy /Y /Q "%SCRIPT_DIR%platforms\github-copilot\agents\*" "%TARGET_DIR%\.github\agents\" >nul 2>&1
 echo   [OK] GitHub Copilot
 goto :eof
 
 :codex_silent
-if not exist "%TARGET_DIR%\.codex" mkdir "%TARGET_DIR%\.codex"
-copy /Y "%SCRIPT_DIR%platforms\codex\AGENTS.md" "%TARGET_DIR%\.codex\" >nul 2>&1
+if not exist "%TARGET_DIR%\.codex\skills\vue-migrator" mkdir "%TARGET_DIR%\.codex\skills\vue-migrator"
+if not exist "%TARGET_DIR%\.codex\skills\vue-migration-planner" mkdir "%TARGET_DIR%\.codex\skills\vue-migration-planner"
+if not exist "%TARGET_DIR%\.codex\skills\vue-migration-executor" mkdir "%TARGET_DIR%\.codex\skills\vue-migration-executor"
+if not exist "%TARGET_DIR%\.codex\skills\vue-migration-reviewer" mkdir "%TARGET_DIR%\.codex\skills\vue-migration-reviewer"
+copy /Y "%SCRIPT_DIR%platforms\codex\skills\vue-migrator\SKILL.md" "%TARGET_DIR%\.codex\skills\vue-migrator\" >nul 2>&1
+copy /Y "%SCRIPT_DIR%platforms\codex\skills\vue-migration-planner\SKILL.md" "%TARGET_DIR%\.codex\skills\vue-migration-planner\" >nul 2>&1
+copy /Y "%SCRIPT_DIR%platforms\codex\skills\vue-migration-executor\SKILL.md" "%TARGET_DIR%\.codex\skills\vue-migration-executor\" >nul 2>&1
+copy /Y "%SCRIPT_DIR%platforms\codex\skills\vue-migration-reviewer\SKILL.md" "%TARGET_DIR%\.codex\skills\vue-migration-reviewer\" >nul 2>&1
 echo   [OK] Codex CLI
 goto :eof
 
 :gemini_silent
-if not exist "%TARGET_DIR%\.gemini" mkdir "%TARGET_DIR%\.gemini"
-copy /Y "%SCRIPT_DIR%platforms\gemini\GEMINI.md" "%TARGET_DIR%\.gemini\" >nul 2>&1
+if not exist "%TARGET_DIR%\.gemini\agents" mkdir "%TARGET_DIR%\.gemini\agents"
+xcopy /Y /Q "%SCRIPT_DIR%platforms\gemini\agents\*" "%TARGET_DIR%\.gemini\agents\" >nul 2>&1
 echo   [OK] Gemini CLI
 goto :eof
 
 :opencode_silent
-if not exist "%TARGET_DIR%\.opencode\agent" mkdir "%TARGET_DIR%\.opencode\agent"
-xcopy /Y /Q "%SCRIPT_DIR%platforms\opencode\agent\*.md" "%TARGET_DIR%\.opencode\agent\" >nul 2>&1
-xcopy /Y /Q "%SCRIPT_DIR%platforms\opencode\agent\subagent\*.md" "%TARGET_DIR%\.opencode\agent\" >nul 2>&1
+if not exist "%TARGET_DIR%\.opencode\agents" mkdir "%TARGET_DIR%\.opencode\agents"
+xcopy /Y /Q "%SCRIPT_DIR%platforms\opencode\agents\*.md" "%TARGET_DIR%\.opencode\agents\" >nul 2>&1
 echo   [OK] OpenCode
 goto :eof
 

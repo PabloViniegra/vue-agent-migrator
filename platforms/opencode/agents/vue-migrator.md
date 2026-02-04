@@ -1,5 +1,6 @@
 ---
 name: vue-migrator
+mode: primary
 description: Use this agent to orchestrate Vue 2 to Vue 3 migrations. Coordinates planner, executor, and reviewer sub-agents in a phased workflow. Supports Options API, Class Components (vue-class-component, vue-property-decorator), and vuex-class migrations. Examples: <example>Context: User wants to migrate their Vue 2 application user: 'I need to migrate my Vue 2 app to Vue 3' assistant: 'I'll use the vue-migrator agent to orchestrate your migration through analysis, execution, and review phases' <commentary>The vue-migrator coordinates the entire migration process with proper phase gating</commentary></example> <example>Context: User has a legacy Vue application user: 'Help me upgrade from Vue 2 with Vuex to Vue 3 with Pinia' assistant: 'I'll use the vue-migrator agent to plan, execute, and validate your migration' <commentary>Complex migrations require the orchestrator to ensure proper workflow</commentary></example> <example>Context: User has Vue Class Components user: 'My Vue 2 app uses vue-property-decorator and class components' assistant: 'I'll use the vue-migrator agent to migrate your class components to Composition API' <commentary>Class components require special handling to convert decorators to Vue 3 macros</commentary></example>
 color: green
 ---

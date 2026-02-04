@@ -7,10 +7,10 @@ A multi-agent system for migrating Vue 2 applications to Vue 3. Supports multipl
 | Platform | Config Location | Command/Trigger |
 |----------|-----------------|-----------------|
 | **Claude Code** | `.claude/agents/`, `.claude/commands/` | `/vue-migrate` |
-| **GitHub Copilot** | `.github/copilot-instructions.md` | "migrate to Vue 3" |
-| **Codex CLI** | `.codex/AGENTS.md` | "migrate to Vue 3" |
-| **Gemini CLI** | `.gemini/GEMINI.md` | "migrate to Vue 3" |
-| **OpenCode** | `.opencode/agent/` | "migrate vue" or `@vue-migrator` |
+| **GitHub Copilot** | `.github/agents/*.md` | "migrate to Vue 3" |
+| **Gemini CLI** | `.gemini/agents/*.md` | "migrate to Vue 3" |
+| **Codex CLI** | `.codex/skills/*/SKILL.md` | "migrate to Vue 3" |
+| **OpenCode** | `.opencode/agents/*.md` | "migrate vue" or `@vue-migrator` |
 
 ## Quick Start
 
@@ -80,7 +80,9 @@ In your Vue 2 project, use your AI assistant:
 install.bat C:\path\to\your\vue2-project
 ```
 
-### Option B: Direct Installation (Claude Code)
+### Option B: Direct Installation (Manual)
+
+#### Claude Code
 
 ```bash
 # Navigate to your Vue 2 project
@@ -92,11 +94,70 @@ mkdir -p .claude/agents .claude/commands
 # Copy files (adjust source path as needed)
 cp /path/to/vue-agent-migrator/platforms/claude-code/agents/*.md .claude/agents/
 cp /path/to/vue-agent-migrator/platforms/claude-code/commands/*.md .claude/commands/
+```
 
-# For OpenCode
-mkdir -p .opencode/agent
-cp /path/to/vue-agent-migrator/platforms/opencode/agent/*.md .opencode/agent/
-cp /path/to/vue-agent-migrator/platforms/opencode/agent/subagent/*.md .opencode/agent/
+#### GitHub Copilot
+
+```bash
+# Navigate to your Vue 2 project
+cd /path/to/your/vue2-project
+
+# Create directory
+mkdir -p .github/agents
+
+# Copy files
+cp /path/to/vue-agent-migrator/platforms/github-copilot/agents/*.md .github/agents/
+```
+
+#### Gemini CLI
+
+```bash
+# Navigate to your Vue 2 project
+cd /path/to/your/vue2-project
+
+# Create directory
+mkdir -p .gemini/agents
+
+# Copy files
+cp /path/to/vue-agent-migrator/platforms/gemini/agents/*.md .gemini/agents/
+```
+
+#### Codex CLI
+
+**Note:** Codex uses a skill-based model and doesn't support subagents yet. Each subagent is mapped to a skill.
+
+```bash
+# Navigate to your Vue 2 project
+cd /path/to/your/vue2-project
+
+# Create directories for each skill
+mkdir -p .codex/skills/vue-migrator
+mkdir -p .codex/skills/vue-migration-planner
+mkdir -p .codex/skills/vue-migration-executor
+mkdir -p .codex/skills/vue-migration-reviewer
+
+# Copy files (each subagent becomes a skill)
+cp /path/to/vue-agent-migrator/platforms/codex/skills/vue-migrator/SKILL.md .codex/skills/vue-migrator/
+cp /path/to/vue-agent-migrator/platforms/codex/skills/vue-migration-planner/SKILL.md .codex/skills/vue-migration-planner/
+cp /path/to/vue-agent-migrator/platforms/codex/skills/vue-migration-executor/SKILL.md .codex/skills/vue-migration-executor/
+cp /path/to/vue-agent-migrator/platforms/codex/skills/vue-migration-reviewer/SKILL.md .codex/skills/vue-migration-reviewer/
+```
+
+#### OpenCode
+
+```bash
+# Navigate to your Vue 2 project
+cd /path/to/your/vue2-project
+
+# Create directory
+mkdir -p .opencode/agents
+
+# Copy all agents (both primary and subagents go in the same folder)
+cp /path/to/vue-agent-migrator/platforms/opencode/agents/*.md .opencode/agents/
+
+# Note: The distinction between primary and subagents is made via the 'mode' property in frontmatter
+# - mode: primary  (vue-migrator.md)
+# - mode: subagent (vue-migration-planner.md, vue-migration-executor.md, vue-migration-reviewer.md)
 ```
 
 ### Option C: Non-Interactive (CLI flags)
@@ -190,52 +251,120 @@ This system implements a phased migration workflow with strict approval gates:
 
 ```
 vue-agent-migrator/
-├── install.sh              # Unix/macOS/Linux installer
-├── install.ps1             # Windows PowerShell installer
-├── install.bat             # Windows CMD installer
+├── install.sh                      # Unix/macOS/Linux installer
+├── install.ps1                     # Windows PowerShell installer
+├── install.bat                     # Windows CMD installer
 ├── platforms/
 │   ├── claude-code/
-│   │   ├── agents/         # Claude Code agents
-│   │   └── commands/       # Claude Code commands
+│   │   ├── agents/                 # Claude Code agents
+│   │   │   ├── vue-migrator.md
+│   │   │   ├── vue-migration-planner.md
+│   │   │   ├── vue-migration-executor.md
+│   │   │   └── vue-migration-reviewer.md
+│   │   └── commands/
+│   │       └── vue-migrate.md      # /vue-migrate command
 │   ├── github-copilot/
-│   │   └── copilot-instructions.md
-│   ├── codex/
-│   │   └── instructions.md
+│   │   └── agents/                 # GitHub Copilot agents
+│   │       ├── vue-migrator.md
+│   │       ├── vue-migration-planner.md
+│   │       ├── vue-migration-executor.md
+│   │       └── vue-migration-reviewer.md
 │   ├── gemini/
-│   │   └── GEMINI.md
+│   │   └── agents/                 # Gemini CLI agents
+│   │       ├── vue-migrator.md
+│   │       ├── vue-migration-planner.md
+│   │       ├── vue-migration-executor.md
+│   │       └── vue-migration-reviewer.md
+│   ├── codex/
+│   │   └── skills/                 # Codex skills (subagent → skill)
+│   │       ├── vue-migrator/
+│   │       │   └── SKILL.md
+│   │       ├── vue-migration-planner/
+│   │       │   └── SKILL.md
+│   │       ├── vue-migration-executor/
+│   │       │   └── SKILL.md
+│   │       └── vue-migration-reviewer/
+│   │           └── SKILL.md
 │   └── opencode/
-│       └── agents/
-├── agents/                 # Standalone agent files
-├── commands/               # Standalone command files
+│       └── agents/                 # All agents (mode property distinguishes primary/subagent)
+│           ├── vue-migrator.md                 # mode: primary
+│           ├── vue-migration-planner.md        # mode: subagent
+│           ├── vue-migration-executor.md       # mode: subagent
+│           └── vue-migration-reviewer.md       # mode: subagent
+├── agents/                         # Standalone/source agent files
+│   ├── vue-migrator.md
+│   ├── vue-migration-planner.md
+│   ├── vue-migration-executor.md
+│   └── vue-migration-reviewer.md
+├── commands/                       # Standalone command files
+│   └── vue-migrate.md
 └── README.md
 ```
 
 ## Platform-Specific Notes
 
 ### Claude Code
+- **Location**: `.claude/agents/*.md` and `.claude/commands/*.md`
 - Uses multi-agent system with specialized roles
 - Supports `/vue-migrate` command
-- Agents: vue-migrator, vue-migration-planner, vue-migration-executor, vue-migration-reviewer
+- **Agents**:
+  - `vue-migrator.md` (orchestrator)
+  - `vue-migration-planner.md` (analysis)
+  - `vue-migration-executor.md` (implementation)
+  - `vue-migration-reviewer.md` (validation)
+- **Command**: `/vue-migrate` triggers the orchestrator
+- Native support for subagents with full context sharing
 
 ### GitHub Copilot
-- Single instruction file in `.github/`
-- Trigger: Ask "migrate to Vue 3"
+- **Location**: `.github/agents/*.md`
+- Each agent is a separate markdown file
+- **Agents**:
+  - `vue-migrator.md`
+  - `vue-migration-planner.md`
+  - `vue-migration-executor.md`
+  - `vue-migration-reviewer.md`
+- **Trigger**: Ask "migrate to Vue 3" or reference specific agent
 - Follows same phased workflow
-
-### Codex CLI (OpenAI)
-- Instructions in `.codex/` directory
-- Trigger: Ask "migrate to Vue 3"
+- GitHub Copilot will read all agent files and use appropriate context
 
 ### Gemini CLI
-- Instructions in `.gemini/` directory
-- Trigger: Ask "migrate to Vue 3"
+- **Location**: `.gemini/agents/*.md`
+- Each agent is a separate markdown file in the agents directory
+- **Agents**:
+  - `vue-migrator.md`
+  - `vue-migration-planner.md`
+  - `vue-migration-executor.md`
+  - `vue-migration-reviewer.md`
+- **Trigger**: Ask "migrate to Vue 3"
+- Gemini reads agent context from the `.gemini/agents/` directory
+
+### Codex CLI (OpenAI)
+- **Location**: `.codex/skills/[skill-name]/SKILL.md`
+- **Important**: Codex uses a **skill-based model** and doesn't support subagents
+- Each subagent must be mapped to a separate skill
+- **Skills** (subagent → skill mapping):
+  - `.codex/skills/vue-migrator/SKILL.md` (orchestrator)
+  - `.codex/skills/vue-migration-planner/SKILL.md` (analysis)
+  - `.codex/skills/vue-migration-executor/SKILL.md` (implementation)
+  - `.codex/skills/vue-migration-reviewer/SKILL.md` (validation)
+- **Trigger**: Ask "migrate to Vue 3" or invoke specific skill
+- The orchestrator skill coordinates calling other skills sequentially
 
 ### OpenCode
-- Agent-based system in `.opencode/agent/` (primary agent + subagents)
-- Primary agent: `vue-migrator.md`
-- Subagents: `vue-migration-planner.md`, `vue-migration-executor.md`, `vue-migration-reviewer.md`
-- Trigger: Ask "migrate vue" or use `@vue-migrator`
-- Subagents can be invoked via `@vue-migration-planner`, `@vue-migration-executor`, `@vue-migration-reviewer`
+- **Location**: `.opencode/agents/*.md` (all agents in same directory)
+- Agent-based system with native subagent support
+- **Distinction by `mode` property**:
+  - `mode: primary` → Primary agent (`vue-migrator.md`)
+  - `mode: subagent` → Subagents (planner, executor, reviewer)
+- **All agents** in `.opencode/agents/`:
+  - `vue-migrator.md` (`mode: primary`)
+  - `vue-migration-planner.md` (`mode: subagent`)
+  - `vue-migration-executor.md` (`mode: subagent`)
+  - `vue-migration-reviewer.md` (`mode: subagent`)
+- **Trigger**: Ask "migrate vue" or use `@vue-migrator`
+- Subagents can be invoked directly: `@vue-migration-planner`, `@vue-migration-executor`, `@vue-migration-reviewer`
+- Switch between primary agents using Tab
+- Reference: https://opencode.ai/docs/agents/
 
 ## Success Criteria
 
