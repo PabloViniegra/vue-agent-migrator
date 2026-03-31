@@ -71,10 +71,10 @@ print_info() {
 # Interactive checkbox menu using tput + read -rsn1
 # ─────────────────────────────────────────────────────────────────────────────
 show_checkbox_menu() {
-    local names=("claude" "copilot" "codex" "gemini" "opencode")
-    local labels=("Claude Code" "GitHub Copilot" "Codex CLI" "Gemini CLI" "OpenCode")
-    local descs=("Anthropic's CLI" "GitHub's AI" "OpenAI's Codex" "Google's Gemini" "Open source AI")
-    local checked=(0 0 0 0 0)
+    local names=("claude" "copilot" "codex" "gemini" "opencode" "cursor" "antigravity")
+    local labels=("Claude Code" "GitHub Copilot" "Codex CLI" "Gemini CLI" "OpenCode" "Cursor" "Antigravity")
+    local descs=("Anthropic's CLI" "GitHub's AI" "OpenAI's Codex" "Google's Gemini" "Open source AI" "Cursor editor" "Google's Antigravity")
+    local checked=(0 0 0 0 0 0 0)
     local count=${#names[@]}
     local cursor=0
     local total_lines=$((count + 2))  # options + blank + status
@@ -344,6 +344,51 @@ install_opencode() {
     echo -e "    ${YELLOW}Usage:${NC} Ask OpenCode to ${GREEN}'migrate vue'${NC} or use ${CYAN}@vue-migrator${NC}"
 }
 
+install_antigravity() {
+    echo ""
+    echo -e "${CYAN}  ---------------------------------------------------------${NC}"
+    echo -e "    ${BLUE}Installing${NC} ${WHITE}Antigravity${NC}"
+    echo -e "${CYAN}  ---------------------------------------------------------${NC}"
+    echo ""
+
+    print_step "Creating directories..."
+    mkdir -p "$TARGET_DIR/.agents/rules"
+    sleep 0.3
+
+    print_step "Copying rule file..."
+    cp "$SCRIPT_DIR/platforms/antigravity/rules/vue-migration.md" "$TARGET_DIR/.agents/rules/" 2>/dev/null || true
+    sleep 0.2
+
+    echo ""
+    print_success "Antigravity installation complete!"
+    print_info "Rules -> ${CYAN}$TARGET_DIR/.agents/rules/${NC}"
+    echo ""
+    echo -e "    ${YELLOW}Usage:${NC} Ask Antigravity to ${GREEN}'migrate to Vue 3'${NC}"
+}
+
+install_cursor() {
+    echo ""
+    echo -e "${CYAN}  ---------------------------------------------------------${NC}"
+    echo -e "    ${BLUE}Installing${NC} ${WHITE}Cursor${NC}"
+    echo -e "${CYAN}  ---------------------------------------------------------${NC}"
+    echo ""
+
+    print_step "Creating directories..."
+    mkdir -p "$TARGET_DIR/.cursor/rules"
+    sleep 0.3
+
+    print_step "Copying rule file..."
+    cp "$SCRIPT_DIR/platforms/cursor/rules/vue-migration.mdc" "$TARGET_DIR/.cursor/rules/" 2>/dev/null || true
+    sleep 0.2
+
+    echo ""
+    print_success "Cursor installation complete!"
+    print_info "Rules -> ${CYAN}$TARGET_DIR/.cursor/rules/${NC}"
+    echo ""
+    echo -e "    ${YELLOW}Usage:${NC} Ask Cursor to ${GREEN}'migrate to Vue 3'${NC}"
+    echo -e "    ${GRAY}Note:  Rule activates automatically when Vue migration is requested${NC}"
+}
+
 print_final_instructions() {
     echo ""
     echo ""
@@ -404,6 +449,8 @@ main() {
             codex)    install_codex ;;
             gemini)   install_gemini ;;
             opencode) install_opencode ;;
+            cursor)       install_cursor ;;
+            antigravity) install_antigravity ;;
         esac
     done
 

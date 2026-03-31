@@ -11,6 +11,8 @@ A multi-agent system for migrating Vue 2 applications to Vue 3. Supports multipl
 | **Gemini CLI** | `.gemini/agents/*.md` | "migrate to Vue 3" |
 | **Codex CLI** | `.codex/skills/*/SKILL.md` | "migrate to Vue 3" |
 | **OpenCode** | `.opencode/agents/*.md` | "migrate vue" or `@vue-migrator` |
+| **Cursor** | `.cursor/rules/vue-migration.mdc` | "migrate to Vue 3" |
+| **Antigravity** | `.agents/rules/vue-migration.md` | "migrate to Vue 3" |
 
 ## Quick Start
 
@@ -53,9 +55,11 @@ Select your AI coding assistant:
   3) Codex            - OpenAI's Codex CLI
   4) Gemini           - Google's Gemini CLI
   5) OpenCode         - Open source AI CLI
-  6) All              - Install for all platforms
+  6) Cursor           - Cursor editor
+  7) Antigravity      - Google's Antigravity
+  8) All              - Install for all platforms
 
-Enter your choice [1-6]:
+Enter your choice [1-8]:
 ```
 
 ### 4. Start Migration
@@ -169,6 +173,32 @@ cp /path/to/vue-agent-migrator/platforms/opencode/agents/*.md .opencode/agents/
 # Note: The distinction between primary and subagents is made via the 'mode' property in frontmatter
 # - mode: primary  (vue-migrator.md)
 # - mode: subagent (vue-migration-planner.md, vue-migration-executor.md, vue-migration-reviewer.md)
+```
+
+#### Cursor
+
+```bash
+# Navigate to your Vue 2 project
+cd /path/to/your/vue2-project
+
+# Create directory
+mkdir -p .cursor/rules
+
+# Copy rule file
+cp /path/to/vue-agent-migrator/platforms/cursor/rules/vue-migration.mdc .cursor/rules/
+```
+
+#### Antigravity
+
+```bash
+# Navigate to your Vue 2 project
+cd /path/to/your/vue2-project
+
+# Create directory
+mkdir -p .agents/rules
+
+# Copy rule file
+cp /path/to/vue-agent-migrator/platforms/antigravity/rules/vue-migration.md .agents/rules/
 ```
 
 ### Option C: Non-Interactive (CLI flags)
@@ -303,12 +333,18 @@ vue-agent-migrator/
 │   │       │   └── SKILL.md
 │   │       └── vue-migration-reviewer/
 │   │           └── SKILL.md
-│   └── opencode/
-│       └── agents/                 # All agents (mode property distinguishes primary/subagent)
-│           ├── vue-migrator.md                 # mode: primary
-│           ├── vue-migration-planner.md        # mode: subagent
-│           ├── vue-migration-executor.md       # mode: subagent
-│           └── vue-migration-reviewer.md       # mode: subagent
+│   ├── opencode/
+│   │   └── agents/                 # All agents (mode property distinguishes primary/subagent)
+│   │       ├── vue-migrator.md                 # mode: primary
+│   │       ├── vue-migration-planner.md        # mode: subagent
+│   │       ├── vue-migration-executor.md       # mode: subagent
+│   │       └── vue-migration-reviewer.md       # mode: subagent
+│   ├── cursor/
+│   │   └── rules/
+│   │       └── vue-migration.mdc   # Cursor rule (agent-requested activation)
+│   └── antigravity/
+│       └── rules/
+│           └── vue-migration.md    # Antigravity workspace rule
 ├── agents/                         # Standalone/source agent files
 │   ├── vue-migrator.md
 │   ├── vue-migration-planner.md
@@ -367,6 +403,21 @@ vue-agent-migrator/
   - `.codex/skills/vue-migration-reviewer/SKILL.md` (validation)
 - **Trigger**: Ask "migrate to Vue 3" or invoke specific skill
 - The orchestrator skill coordinates calling other skills sequentially
+
+### Antigravity
+- **Location**: `.agents/rules/vue-migration.md`
+- Single rule file with YAML frontmatter (`name`, `description`)
+- Antigravity loads all `.md` files in `.agents/rules/` as workspace context rules
+- Global rules can also be placed in `~/.gemini/GEMINI.md`
+- **Trigger**: Ask "migrate to Vue 3" in Antigravity chat
+
+### Cursor
+- **Location**: `.cursor/rules/vue-migration.mdc`
+- Single rule file with YAML frontmatter in `.mdc` format
+- **Rule type**: Agent Requested — Cursor AI decides when to include based on `description` field
+- **Trigger**: Ask "migrate to Vue 3" in Cursor chat
+- The rule activates automatically when a Vue migration task is detected
+- Follows same phased workflow as other single-agent platforms
 
 ### OpenCode
 - **Location**: `.opencode/agents/*.md` (all agents in same directory)

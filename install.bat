@@ -56,6 +56,8 @@ set "C2=0"
 set "C3=0"
 set "C4=0"
 set "C5=0"
+set "C6=0"
+set "C7=0"
 
 :menu_loop
 echo  -----------------------------------------------------------
@@ -69,10 +71,12 @@ if "!C2!"=="1" (echo    [X] 2. GitHub Copilot     - GitHub's AI) else (echo    [
 if "!C3!"=="1" (echo    [X] 3. Codex CLI          - OpenAI's Codex) else (echo    [ ] 3. Codex CLI          - OpenAI's Codex)
 if "!C4!"=="1" (echo    [X] 4. Gemini CLI         - Google's Gemini) else (echo    [ ] 4. Gemini CLI         - Google's Gemini)
 if "!C5!"=="1" (echo    [X] 5. OpenCode           - Open source AI) else (echo    [ ] 5. OpenCode           - Open source AI)
+if "!C6!"=="1" (echo    [X] 6. Cursor             - Cursor editor) else (echo    [ ] 6. Cursor             - Cursor editor)
+if "!C7!"=="1" (echo    [X] 7. Antigravity        - Google's Antigravity) else (echo    [ ] 7. Antigravity        - Google's Antigravity)
 echo.
 
 REM Count selected
-set /a "SEL_COUNT=C1+C2+C3+C4+C5"
+set /a "SEL_COUNT=C1+C2+C3+C4+C5+C6"
 if !SEL_COUNT! GTR 0 (
     echo    !SEL_COUNT! selected
 ) else (
@@ -89,12 +93,14 @@ if "%choice%"=="2" (if "!C2!"=="1" (set "C2=0") else (set "C2=1")) & goto :menu_
 if "%choice%"=="3" (if "!C3!"=="1" (set "C3=0") else (set "C3=1")) & goto :menu_loop
 if "%choice%"=="4" (if "!C4!"=="1" (set "C4=0") else (set "C4=1")) & goto :menu_loop
 if "%choice%"=="5" (if "!C5!"=="1" (set "C5=0") else (set "C5=1")) & goto :menu_loop
+if "%choice%"=="6" (if "!C6!"=="1" (set "C6=0") else (set "C6=1")) & goto :menu_loop
+if "%choice%"=="7" (if "!C7!"=="1" (set "C7=0") else (set "C7=1")) & goto :menu_loop
 if /i "%choice%"=="a" (
-    set /a "ALL_COUNT=C1+C2+C3+C4+C5"
-    if !ALL_COUNT!==5 (
-        set "C1=0" & set "C2=0" & set "C3=0" & set "C4=0" & set "C5=0"
+    set /a "ALL_COUNT=C1+C2+C3+C4+C5+C6+C7"
+    if !ALL_COUNT!==7 (
+        set "C1=0" & set "C2=0" & set "C3=0" & set "C4=0" & set "C5=0" & set "C6=0" & set "C7=0"
     ) else (
-        set "C1=1" & set "C2=1" & set "C3=1" & set "C4=1" & set "C5=1"
+        set "C1=1" & set "C2=1" & set "C3=1" & set "C4=1" & set "C5=1" & set "C6=1" & set "C7=1"
     )
     goto :menu_loop
 )
@@ -107,7 +113,7 @@ echo  Invalid option. Try again.
 goto :menu_loop
 
 :install_selected
-set /a "SEL_COUNT=C1+C2+C3+C4+C5"
+set /a "SEL_COUNT=C1+C2+C3+C4+C5+C6+C7"
 if !SEL_COUNT!==0 (
     echo  No platforms selected. Exiting.
     goto :end
@@ -118,6 +124,8 @@ if "!C2!"=="1" call :copilot
 if "!C3!"=="1" call :codex
 if "!C4!"=="1" call :gemini
 if "!C5!"=="1" call :opencode
+if "!C6!"=="1" call :cursor
+if "!C7!"=="1" call :antigravity
 goto :done
 
 :claude
@@ -200,6 +208,32 @@ echo         - vue-migration-planner.md (mode: subagent)
 echo         - vue-migration-executor.md (mode: subagent)
 echo         - vue-migration-reviewer.md (mode: subagent)
 echo       Usage: Ask OpenCode to "migrate vue" or use @vue-migrator
+goto :eof
+
+:cursor
+echo.
+echo  ---------------------------------------------------------
+echo    Installing Cursor
+echo  ---------------------------------------------------------
+echo.
+if not exist "%TARGET_DIR%\.cursor\rules" mkdir "%TARGET_DIR%\.cursor\rules"
+copy /Y "%SCRIPT_DIR%platforms\cursor\rules\vue-migration.mdc" "%TARGET_DIR%\.cursor\rules\" >nul 2>&1
+echo  [OK] Cursor installation complete!
+echo       Rules: %TARGET_DIR%\.cursor\rules\
+echo       Usage: Ask Cursor to "migrate to Vue 3"
+goto :eof
+
+:antigravity
+echo.
+echo  ---------------------------------------------------------
+echo    Installing Antigravity
+echo  ---------------------------------------------------------
+echo.
+if not exist "%TARGET_DIR%\.agents\rules" mkdir "%TARGET_DIR%\.agents\rules"
+copy /Y "%SCRIPT_DIR%platforms\antigravity\rules\vue-migration.md" "%TARGET_DIR%\.agents\rules\" >nul 2>&1
+echo  [OK] Antigravity installation complete!
+echo       Rules: %TARGET_DIR%\.agents\rules\
+echo       Usage: Ask Antigravity to "migrate to Vue 3"
 goto :eof
 
 :done

@@ -28,6 +28,30 @@ These platforms support multiple specialized agents working together:
 - **Permissions**: Fine-grained control per agent (tools, bash, edit)
 - **Trigger**: "migrate vue", `@vue-migrator`, or `@vue-migration-*`
 
+### Cursor
+- **Configuration**: `.cursor/rules/vue-migration.mdc`
+- **Agent Type**: Cursor rules (`.mdc` format with YAML frontmatter)
+- **Workflow**:
+  - Single rule file contains complete migration workflow
+  - No agent hierarchy — one AI handles all phases
+  - Two approval gates: Macro Analysis approval, then Execution Plan approval
+  - Phase-by-phase execution with checkpoint prompts between phases
+  - Creates and maintains `migration-plan.json` in project root
+- **Rule activation**: `description` field enables automatic activation when Vue migration is requested
+- **Trigger**: Ask "migrate to Vue 3" in Cursor
+
+### Antigravity
+- **Configuration**: `.agents/rules/vue-migration.md`
+- **Agent Type**: Antigravity workspace rule (Markdown with YAML frontmatter: `name`, `description`)
+- **Workflow**:
+  - Single rule file contains complete migration workflow
+  - No agent hierarchy — one AI handles all phases
+  - Two approval gates: Macro Analysis approval, then Execution Plan approval
+  - Phase-by-phase execution with checkpoint prompts between phases
+  - Creates and maintains `migration-plan.json` in project root
+- **Rule loading**: Antigravity loads all `.md` files in `.agents/rules/` as context rules
+- **Trigger**: Ask "migrate to Vue 3" in Antigravity
+
 ## Single-Agent Systems
 
 These platforms use a single instruction file instead of multiple agents:
@@ -77,15 +101,15 @@ These platforms use a single instruction file instead of multiple agents:
 
 ## Key Differences
 
-| Feature | Claude Code | OpenCode | GitHub Copilot | Codex | Gemini |
-|----------|-------------|----------|----------------|--------|--------|
-| **Agent Files** | Multiple (agents/ + commands/) | Multiple (agent/) | Single | Single | Single |
-| **Frontmatter** | YAML | Markdown (mode) | None | None | None |
-| **Agent Hierarchy** | Yes (primary + subagents) | Yes (primary + subagents) | No | No | No |
-| **Auto Workflow** | Phased, enforced by agents (2 approvals + phase checkpoints) | Phased, enforced by agents (2 approvals + phase checkpoints) | Manual, in instructions (2 approvals + phase checkpoints) | Manual, in instructions (2 approvals + phase checkpoints) |
-| **Permissions** | Via agent definition | Per-agent, per-tool | None | None | None |
-| **Trigger Method** | `/vue-migrate`, `@mention` | `@mention`, text | Text | Text | Text |
-| **File Naming** | Flexible | Flexible | `copilot-instructions.md` | `AGENTS.md` | `GEMINI.md` |
+| Feature | Claude Code | OpenCode | GitHub Copilot | Codex | Gemini | Cursor | Antigravity |
+|----------|-------------|----------|----------------|--------|--------|--------|-------------|
+| **Agent Files** | Multiple (agents/ + commands/) | Multiple (agent/) | Single | Single | Single | Single | Single |
+| **Frontmatter** | YAML | Markdown (mode) | None | None | None | YAML (`.mdc`) | YAML (`.md`) |
+| **Agent Hierarchy** | Yes (primary + subagents) | Yes (primary + subagents) | No | No | No | No | No |
+| **Auto Workflow** | Phased, enforced by agents (2 approvals + phase checkpoints) | Phased, enforced by agents (2 approvals + phase checkpoints) | Manual, in instructions (2 approvals + phase checkpoints) | Manual, in instructions (2 approvals + phase checkpoints) | Manual, in instructions (2 approvals + phase checkpoints) | Manual, in instructions (2 approvals + phase checkpoints) | Manual, in instructions (2 approvals + phase checkpoints) |
+| **Permissions** | Via agent definition | Per-agent, per-tool | None | None | None | None | None |
+| **Trigger Method** | `/vue-migrate`, `@mention` | `@mention`, text | Text | Text | Text | Text (auto-attach via description) | Text |
+| **File Naming** | Flexible | Flexible | `copilot-instructions.md` | `AGENTS.md` | `GEMINI.md` | `*.mdc` in `.cursor/rules/` | `*.md` in `.agents/rules/` |
 
 ## File Installation Summary
 
@@ -125,6 +149,16 @@ OpenAI Codex CLI:
 Google Gemini CLI:
   .gemini/
     GEMINI.md
+
+Cursor:
+  .cursor/
+    rules/
+      vue-migration.mdc
+
+Antigravity:
+  .agents/
+    rules/
+      vue-migration.md
 ```
 
 ## Migration Workflow Comparison

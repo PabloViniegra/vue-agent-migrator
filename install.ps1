@@ -5,7 +5,7 @@ param(
     [Parameter(Mandatory=$true, Position=0)]
     [string]$TargetPath,
 
-    [ValidateSet("claude", "copilot", "codex", "gemini", "opencode", "all", "")]
+    [ValidateSet("claude", "copilot", "codex", "gemini", "opencode", "cursor", "antigravity", "all", "")]
     [string]$Platform = ""
 )
 
@@ -65,10 +65,10 @@ function Write-Info($message) {
 # ─────────────────────────────────────────────────────────────────────────────
 function Show-CheckboxMenu {
     # Platform definitions
-    $names  = @("claude",           "copilot",          "codex",            "gemini",           "opencode")
-    $labels = @("Claude Code",      "GitHub Copilot",   "Codex CLI",        "Gemini CLI",       "OpenCode")
-    $descs  = @("Anthropic's CLI",  "GitHub's AI",      "OpenAI's Codex",   "Google's Gemini",  "Open source AI")
-    $checked = @($false,            $false,             $false,             $false,             $false)
+    $names  = @("claude",           "copilot",          "codex",            "gemini",           "opencode",         "cursor",           "antigravity")
+    $labels = @("Claude Code",      "GitHub Copilot",   "Codex CLI",        "Gemini CLI",       "OpenCode",         "Cursor",           "Antigravity")
+    $descs  = @("Anthropic's CLI",  "GitHub's AI",      "OpenAI's Codex",   "Google's Gemini",  "Open source AI",   "Cursor editor",    "Google's Antigravity")
+    $checked = @($false,            $false,             $false,             $false,             $false,             $false,             $false)
 
     $count  = $names.Count
     $cursor = 0
@@ -369,6 +369,65 @@ function Install-OpenCode {
     Write-Host "@vue-migrator" -ForegroundColor Cyan
 }
 
+function Install-Antigravity {
+    Write-Host ""
+    Write-Host "  ---------------------------------------------------------" -ForegroundColor Cyan
+    Write-Host "    Installing " -ForegroundColor Blue -NoNewline
+    Write-Host "Antigravity" -ForegroundColor White
+    Write-Host "  ---------------------------------------------------------" -ForegroundColor Cyan
+    Write-Host ""
+
+    Write-Step "Creating directories..."
+    $rulesDir = Join-Path $TargetPath ".agents\rules"
+    New-Item -ItemType Directory -Force -Path $rulesDir | Out-Null
+    Start-Sleep -Milliseconds 300
+
+    Write-Step "Copying rule file..."
+    $sourceRule = Join-Path $ScriptDir "platforms\antigravity\rules\vue-migration.md"
+    if (Test-Path $sourceRule) {
+        Copy-Item $sourceRule -Destination $rulesDir -Force
+    }
+    Start-Sleep -Milliseconds 200
+
+    Write-Host ""
+    Write-Success "Antigravity installation complete!"
+    Write-Info "Rules -> $rulesDir"
+    Write-Host ""
+    Write-Host "    Usage: " -ForegroundColor Yellow -NoNewline
+    Write-Host "Ask Antigravity to " -NoNewline
+    Write-Host "'migrate to Vue 3'" -ForegroundColor Green
+}
+
+function Install-Cursor {
+    Write-Host ""
+    Write-Host "  ---------------------------------------------------------" -ForegroundColor Cyan
+    Write-Host "    Installing " -ForegroundColor Blue -NoNewline
+    Write-Host "Cursor" -ForegroundColor White
+    Write-Host "  ---------------------------------------------------------" -ForegroundColor Cyan
+    Write-Host ""
+
+    Write-Step "Creating directories..."
+    $rulesDir = Join-Path $TargetPath ".cursor\rules"
+    New-Item -ItemType Directory -Force -Path $rulesDir | Out-Null
+    Start-Sleep -Milliseconds 300
+
+    Write-Step "Copying rule file..."
+    $sourceRule = Join-Path $ScriptDir "platforms\cursor\rules\vue-migration.mdc"
+    if (Test-Path $sourceRule) {
+        Copy-Item $sourceRule -Destination $rulesDir -Force
+    }
+    Start-Sleep -Milliseconds 200
+
+    Write-Host ""
+    Write-Success "Cursor installation complete!"
+    Write-Info "Rules -> $rulesDir"
+    Write-Host ""
+    Write-Host "    Usage: " -ForegroundColor Yellow -NoNewline
+    Write-Host "Ask Cursor to " -NoNewline
+    Write-Host "'migrate to Vue 3'" -ForegroundColor Green
+    Write-Host "    Note:  Rule activates automatically when Vue migration is requested" -ForegroundColor DarkGray
+}
+
 function Write-FinalInstructions {
     Write-Host ""
     Write-Host ""
@@ -435,12 +494,16 @@ function Main {
             "codex"    { Install-Codex }
             "gemini"   { Install-Gemini }
             "opencode" { Install-OpenCode }
+            "cursor"       { Install-Cursor }
+            "antigravity"  { Install-Antigravity }
             "all" {
                 Install-ClaudeCode
                 Install-GitHubCopilot
                 Install-Codex
                 Install-Gemini
                 Install-OpenCode
+                Install-Cursor
+                Install-Antigravity
             }
         }
         Write-FinalInstructions
@@ -463,6 +526,8 @@ function Main {
             "codex"    { Install-Codex }
             "gemini"   { Install-Gemini }
             "opencode" { Install-OpenCode }
+            "cursor"      { Install-Cursor }
+            "antigravity" { Install-Antigravity }
         }
     }
 
