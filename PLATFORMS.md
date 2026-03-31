@@ -38,7 +38,9 @@ These platforms use a single instruction file instead of multiple agents:
 - **Workflow**:
   - Single file contains complete migration workflow
   - No agent hierarchy - one AI handles all phases
-  - Must manually enforce approval gates in conversation
+  - Two approval gates: Macro Analysis approval, then Execution Plan approval
+  - Phase-by-phase execution with checkpoint prompts between phases
+  - Creates and maintains `migration-plan.json` in project root
 - **Trigger**: Ask "migrate to Vue 3" in any Copilot interface
 
 ### OpenAI Codex CLI
@@ -52,7 +54,9 @@ These platforms use a single instruction file instead of multiple agents:
   - Single file contains complete migration workflow
   - Codex concatenates multiple AGENTS.md files if found
   - No agent hierarchy - one AI handles all phases
-  - Must manually enforce approval gates in conversation
+  - Two approval gates: Macro Analysis approval, then Execution Plan approval
+  - Phase-by-phase execution with checkpoint prompts between phases
+  - Creates and maintains `migration-plan.json` in project root
 - **Trigger**: Ask "migrate to Vue 3" in Codex CLI
 
 ### Google Gemini CLI
@@ -66,7 +70,9 @@ These platforms use a single instruction file instead of multiple agents:
   - Single file contains complete migration workflow
   - Gemini concatenates multiple GEMINI.md files if found
   - No agent hierarchy - one AI handles all phases
-  - Must manually enforce approval gates in conversation
+  - Two approval gates: Macro Analysis approval, then Execution Plan approval
+  - Phase-by-phase execution with checkpoint prompts between phases
+  - Creates and maintains `migration-plan.json` in project root
 - **Trigger**: Ask "migrate to Vue 3" in Gemini CLI
 
 ## Key Differences
@@ -76,7 +82,7 @@ These platforms use a single instruction file instead of multiple agents:
 | **Agent Files** | Multiple (agents/ + commands/) | Multiple (agent/) | Single | Single | Single |
 | **Frontmatter** | YAML | Markdown (mode) | None | None | None |
 | **Agent Hierarchy** | Yes (primary + subagents) | Yes (primary + subagents) | No | No | No |
-| **Auto Workflow** | Phased, enforced by agents | Phased, enforced by agents | Manual, in instructions | Manual, in instructions |
+| **Auto Workflow** | Phased, enforced by agents (2 approvals + phase checkpoints) | Phased, enforced by agents (2 approvals + phase checkpoints) | Manual, in instructions (2 approvals + phase checkpoints) | Manual, in instructions (2 approvals + phase checkpoints) |
 | **Permissions** | Via agent definition | Per-agent, per-tool | None | None | None |
 | **Trigger Method** | `/vue-migrate`, `@mention` | `@mention`, text | Text | Text | Text |
 | **File Naming** | Flexible | Flexible | `copilot-instructions.md` | `AGENTS.md` | `GEMINI.md` |
@@ -128,30 +134,37 @@ Google Gemini CLI:
 **Automatic Phase Enforcement:**
 1. User triggers migration
 2. Orchestrator agent (vue-migrator) invokes planner agent
-3. Planner analyzes and produces Migration Analysis Document
-4. Orchestrator presents plan and **automatically waits for approval**
-5. After approval, orchestrator invokes executor agent
-6. Executor implements the migration
-7. Orchestrator invokes reviewer agent
-8. Reviewer validates and produces Review Report
-9. Final recommendation provided
+3. Planner analyzes and produces **Macro Analysis Document**
+4. Orchestrator presents Macro Analysis and **automatically waits for Approval #1**
+5. After Macro Analysis approval, planner produces **Execution Plan** — an ordered list of phases with rationale and complexity, based on the project's dependencies
+6. Orchestrator presents Execution Plan; user can reorder or remove phases, then gives **Approval #2**
+7. Orchestrator writes `migration-plan.json` to project root; begins phase loop
+8. For each approved phase: orchestrator invokes executor, executor runs phase in isolation, orchestrator presents checkpoint prompt and **waits for "continue"**
+9. On failure: orchestrator presents failure report (file + reason) and waits for retry/skip/abort choice
+10. After all phases complete (or are skipped), orchestrator invokes reviewer agent
+11. Reviewer reads `migration-plan.json`, validates result, produces Review Report
+12. Final recommendation provided
 
 **Benefits:**
 - Clear separation of concerns
 - Automatic workflow enforcement
 - Each agent has specialized permissions
 - User can switch between agents during session
+- Phase-level granularity: pause, resume, or skip individual phases
 
 ### Single-Agent Systems (Copilot, Codex, Gemini)
 
 **Manual Phase Enforcement:**
 1. User triggers migration
-2. AI analyzes project and produces Migration Plan
-3. AI **asks** for user approval (not automatic)
+2. AI analyzes project and produces **Macro Analysis (Migration Plan)**
+3. AI **asks** for user approval (Approval #1)
 4. User must explicitly approve
-5. AI implements the migration
-6. AI validates and produces Review Report
-7. Final recommendation provided
+5. AI presents **Execution Plan** — an ordered list of phases; user can reorder or remove phases
+6. User approves Execution Plan (Approval #2); AI writes `migration-plan.json` to project root
+7. AI executes Phase 1, presents checkpoint prompt, **waits for "continue"**
+8. Repeat for each phase; on failure: report file + reason, wait for retry/skip/abort choice
+9. After all phases: AI validates result, reads `migration-plan.json`, produces Review Report
+10. Final recommendation provided
 
 **Benefits:**
 - Simpler setup (single file)

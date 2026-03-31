@@ -1323,6 +1323,50 @@ Document and provide links to official resources:
 - Vite vs Webpack benchmarks
 - esbuild vs Babel transpilation speed
 
+## Phase 2: Execution Plan
+
+After the user approves the Macro Analysis, produce an Execution Plan presented conversationally.
+
+### Phase Detection Rules
+
+Detect which phases apply to this project based on `package.json`:
+
+| Phase              | Include when                                                                 |
+|--------------------|------------------------------------------------------------------------------|
+| `dependencies`     | Always                                                                       |
+| `build-tool`       | `vue-cli-service` or `@vue/cli` found in `package.json`                     |
+| `router`           | `vue-router` found in `package.json`                                         |
+| `stores`           | `vuex` found in `package.json`                                               |
+| `class-components` | `vue-class-component` or `vue-property-decorator` found in `package.json`   |
+| `components`       | Always (core migration)                                                      |
+| `tests`            | `jest`, `vitest`, or `@vue/test-utils` found in `package.json`              |
+
+### Execution Plan Output Format
+
+Present the following conversationally after Macro Analysis is approved:
+
+```
+## Proposed Execution Plan
+
+Based on the analysis, I recommend these phases in this order:
+
+| # | Phase       | Rationale                                   | Complexity |
+|---|-------------|---------------------------------------------|------------|
+| 1 | dependencies | Foundation — required before anything else | Low        |
+| 2 | build-tool  | Required before running post-migration tests | Medium     |
+| 3 | router      | Low coupling, safe early win                | Low        |
+| 4 | stores      | Components depend on stores being ready     | High       |
+| 5 | components  | Largest phase — depends on stores           | High       |
+
+Phases NOT applicable to your project (skipped):
+- ~~tests~~ — no test framework detected
+
+You can reorder, remove, or combine phases before approving.
+Reply with your preferred order or "approved" to use this order.
+```
+
+**IMPORTANT:** Do not begin any code changes until the user explicitly approves the Execution Plan.
+
 ## Communication
 
 When presenting your analysis:

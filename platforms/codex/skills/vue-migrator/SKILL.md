@@ -56,23 +56,124 @@ Check for `workspaces` in `package.json` or `lerna.json`. If detected:
 
 ## Workflow Phases
 
-### Phase 1: Planning
-1. Invoke the **planner** sub-agent to analyze the project
-2. The planner will produce a **Migration Analysis & Trade-offs Document**
-3. Present the document to the user
-4. **STOP and wait for explicit user approval or modifications**
+### Phase 1: Planning — Macro Analysis
+1. Invoke the **planner** sub-agent to analyze the project.
+2. Planner produces a **Migration Analysis & Trade-offs Document**.
+3. Present the document to the user.
+4. **STOP and wait for explicit user approval.**
 
-### Phase 2: Execution
-1. Only proceed after receiving explicit user approval of the plan
-2. Invoke the **executor** sub-agent with the approved plan
-3. The executor implements the migration exactly as approved
-4. Track any unexpected issues or deviations
+### Phase 2: Planning — Execution Plan
+1. After Macro Analysis approval, invoke the **planner** again to produce the **Execution Plan**.
+2. Planner detects applicable phases and proposes an ordered list with rationale and complexity.
+3. Present the Execution Plan to the user.
+4. **STOP and allow the user to reorder, remove, or combine phases.**
+5. Once approved, write `migration-plan.json` to the project root (see schema below).
 
-### Phase 3: Review
-1. After execution completes, invoke the **reviewer** sub-agent
-2. The reviewer audits the migration against the approved plan
-3. Present the **Final Migration Review Report** to the user
-4. Communicate the final recommendation (Approve/Approve with fixes/Reject)
+### Phase 3: Execution (per phase)
+For each phase in the approved order:
+1. Discover files in scope for this phase (see File Discovery Rules below).
+2. Update `migration-plan.json`: set phase `status` to `in-progress`.
+3. Invoke the **executor** sub-agent with phase-scoped context.
+4. **On success:**
+   - Update phase `status` to `completed` in `migration-plan.json`.
+   - Report to user with list of modified files.
+   - **STOP and wait for "continue" before starting next phase.**
+5. **On failure:**
+   - Update phase `status` to `failed` in `migration-plan.json`.
+   - Append to `failureLog` with file path and reason.
+   - Present failure report and options (see Failure Handling below).
+   - **STOP and wait for user choice.**
+
+### Phase 4: Review
+1. After all phases are completed (or skipped), invoke the **reviewer** sub-agent.
+2. Pass the path to `migration-plan.json` so reviewer can flag skipped phases.
+3. Present the **Final Migration Review Report** to the user.
+
+## migration-plan.json Schema
+
+Write this file to the project root at the start of Phase 3:
+
+```json
+{
+  "version": "1.0",
+  "createdAt": "<ISO timestamp>",
+  "projectPath": "<absolute path to project>",
+  "phases": [
+    {
+      "id": "dependencies",
+      "label": "Dependency updates",
+      "order": 1,
+      "status": "pending"
+    }
+  ],
+  "failureLog": []
+}
+```
+
+Phase status values: `pending` | `in-progress` | `completed` | `failed` | `skipped`
+
+## File Discovery Rules (per phase)
+
+Before invoking the executor for a phase, scan the project to determine `files_in_scope`:
+
+| Phase              | Scan pattern                                                                      |
+|--------------------|-----------------------------------------------------------------------------------|
+| `dependencies`     | `package.json` only                                                               |
+| `build-tool`       | `vue.config.js`, `babel.config.js`, `webpack.config.*`, `vite.config.*`          |
+| `router`           | `src/router/**/*`                                                                 |
+| `stores`           | `src/store/**/*`, `src/stores/**/*`                                               |
+| `class-components` | All `*.ts` / `*.vue` files containing `@Component` or `vue-property-decorator`   |
+| `components`       | `src/components/**/*.vue`, `src/views/**/*.vue`, `src/pages/**/*.vue`            |
+| `tests`            | `tests/**/*`, `__tests__/**/*`, `**/*.spec.*`, `**/*.test.*`                     |
+
+## Failure Handling
+
+When the executor reports a failure:
+
+1. Stop the phase immediately.
+2. Update `migration-plan.json`: phase `status: "failed"`, append to `failureLog`.
+3. Present this report to the user:
+
+```
+❌ Phase "<phase>" failed
+
+File:   <file path>
+Reason: <exact description>
+
+Options:
+  A) Retry this phase — use after manually fixing the file
+  B) Skip this phase — marks for manual review, continues to next phase
+  C) Abort migration — stops all execution
+
+What would you like to do?
+```
+
+4. Wait for user response. Take no action until response received.
+5. If "skip": set phase `status` to `skipped`, continue to next phase.
+
+## Session Resume
+
+On startup, before doing anything else:
+- Check if `migration-plan.json` exists in the project root.
+- If found and has phases with `status: "in-progress"` or `status: "pending"`:
+  - Inform the user: *"A previous migration is in progress. Last completed phase: X. Resume from phase Y?"*
+  - Wait for user confirmation before proceeding.
+
+## Phase Completion Prompt
+
+After each successful phase, present:
+
+```
+✅ Phase "<phase_label>" completed.
+
+Modified files:
+- <file 1>
+- <file 2>
+
+Next phase: "<next_phase_label>" — estimated complexity: <complexity>
+
+Reply "continue" to proceed, or "pause" to stop here.
+```
 
 ## Critical Constraints
 

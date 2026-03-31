@@ -46,7 +46,7 @@ claude
 # 5. Start migration
 /vue-migrate
 
-# 6. Review plan → Approve → Done!
+# 6. Approve Macro Analysis → Approve Execution Plan → Execute phases one by one
 ```
 
 ---
@@ -118,7 +118,7 @@ Execute the command:
 
 ### Step 6: Planning Phase
 
-The agent will analyze your project:
+The agent will analyze your project and produce two planning outputs — each requiring your approval before proceeding.
 
 **What it analyzes:**
 - `package.json` - Dependencies and versions
@@ -126,17 +126,36 @@ The agent will analyze your project:
 - Vuex modules and state patterns
 - Mixins, filters, and deprecated patterns
 
-**Output:** Complete Migration Analysis Document
+**Output 1:** Complete Migration Analysis & Trade-offs Document (Macro Analysis)
 
-### Step 7: Review & Approve
+After you approve the Macro Analysis, the planner produces:
 
-The agent will ask:
+**Output 2:** Execution Plan — an ordered list of migration phases detected for your specific project, with rationale and complexity estimates. For example:
+
+```
+## Proposed Execution Plan
+
+| # | Phase        | Rationale                                   | Complexity |
+|---|--------------|---------------------------------------------|------------|
+| 1 | dependencies | Foundation — required before anything else  | Low        |
+| 2 | build-tool   | Required before running post-migration tests | Medium    |
+| 3 | router       | Low coupling, safe early win                | Low        |
+| 4 | stores       | Components depend on stores being ready     | High       |
+| 5 | components   | Largest phase — depends on stores           | High       |
+
+You can reorder, remove, or combine phases before approving.
+Reply with your preferred order or "approved" to use this order.
+```
+
+### Step 7: Two Approval Steps
+
+**Approval 1 — Macro Analysis:**
 
 ```
 Do you approve this migration plan?
 
 Please review the full analysis above and respond with:
-- "approved" to proceed with execution
+- "approved" to proceed
 - "rejected" or specific feedback to revise the plan
 
 ⚠️ I will NOT proceed with any code changes until you explicitly approve.
@@ -144,18 +163,49 @@ Please review the full analysis above and respond with:
 
 Respond: `approved`
 
-### Step 8: Execution Phase
+**Approval 2 — Execution Plan:**
 
-The agent will migrate:
+After the Execution Plan is presented, review the phases. You can:
+- Reply `approved` to accept the proposed order
+- Provide a reordered list (e.g., "skip build-tool, do router before stores")
 
-1. **Dependencies** - Vue 3, Router 4, Pinia
-2. **Entry Point** - `main.js` → `main.ts`
-3. **Router** - Vue Router 3 → 4
-4. **Stores** - Vuex → Pinia
-5. **Components** - Options API → Composition API
-6. **Mixins** - → Composables
-7. **Filters** - → Methods/Utils
-8. **Build** - Vue CLI → Vite
+Once approved, `migration-plan.json` is written to your project root to track migration progress.
+
+### Step 8: Execution Phase (Phase by Phase)
+
+The migration runs one phase at a time. After each phase completes, you will see a checkpoint prompt:
+
+```
+✅ Phase "router" completed.
+
+Modified files:
+- src/router/index.js
+- src/router/guards.js
+
+Next phase: "stores" (Vuex → Pinia) — estimated complexity: High
+
+Reply "continue" to proceed, or "pause" to stop here.
+```
+
+Reply `continue` to proceed to the next phase, or `pause` to stop and resume later.
+
+**If a phase fails**, you will see:
+
+```
+❌ Phase "stores" failed
+
+File:   src/store/auth.js
+Reason: [exact description of unrecognized pattern or error]
+
+Options:
+  A) Retry this phase — use if you have manually fixed the file
+  B) Skip this phase — marks it for manual review, continues to next phase
+  C) Abort migration — stops all execution, project left at current state
+
+What would you like to do?
+```
+
+The tool waits for your choice — no automatic action is taken.
 
 ### Step 9: Review Phase
 
@@ -184,49 +234,101 @@ You:
 /vue-migrate
 
 Claude:
-I will orchestrate your Vue 2 to Vue 3 migration through three phases:
-1. Planning Phase
-2. Execution Phase (requires approval)
-3. Review Phase
+I will orchestrate your Vue 2 to Vue 3 migration. Starting with a full project analysis.
 
-Starting analysis...
-
+Analyzing...
 ✓ Found 45 components
 ✓ Found 8 Vuex modules
 ✓ Found 12 mixins
+✓ vue-router detected
+✓ vue-cli-service detected
 
-[... Migration Plan Document ...]
+[... Migration Analysis & Trade-offs Document ...]
 
-Do you approve this plan?
+Do you approve this migration plan?
+- "approved" to proceed to the Execution Plan
+- "rejected" or feedback to revise
 
 You:
 approved
 
 Claude:
-✅ Plan approved. Proceeding...
+Macro Analysis approved. Here is the proposed Execution Plan for your project:
 
-[Phase 1] Updating dependencies...
-  ✓ Vue 2.6 → 3.4.0
-  ✓ Added Pinia 2.1.0
+## Proposed Execution Plan
 
-[Phase 2] Migrating stores...
-  ✓ user store → Pinia
-  ✓ auth store → Pinia
+| # | Phase        | Rationale                                   | Complexity |
+|---|--------------|---------------------------------------------|------------|
+| 1 | dependencies | Foundation — required before anything else  | Low        |
+| 2 | build-tool   | Required before running post-migration tests | Medium    |
+| 3 | router       | Low coupling, safe early win                | Low        |
+| 4 | stores       | Components depend on stores being ready     | High       |
+| 5 | components   | Largest phase — depends on stores           | High       |
 
-[Phase 3] Migrating components...
-  ✓ 45 components → Composition API
+Phases NOT applicable to your project (skipped):
+- ~~tests~~ — no test framework detected
+- ~~class-components~~ — vue-property-decorator not found
 
-Migration complete!
+You can reorder or remove phases. Reply "approved" to use this order.
 
-Running validation...
-✅ All checks passed
+You:
+approved
 
-Migration APPROVED 🎉
+Claude:
+Execution Plan approved. Writing migration-plan.json to project root.
+
+Starting Phase 1: "dependencies"...
+  ✓ Updated package.json: vue 2.6 → 3.4.0
+  ✓ Added pinia 2.1.0
+  ✓ Removed vuex
+
+✅ Phase "dependencies" completed.
+
+Modified files:
+- package.json
+
+Next phase: "build-tool" (Vue CLI → Vite) — estimated complexity: Medium
+
+Reply "continue" to proceed, or "pause" to stop here.
+
+You:
+continue
+
+Claude:
+Starting Phase 2: "build-tool"...
+  ✓ Created vite.config.js
+  ✓ Removed vue.config.js
+  ✓ Updated package.json scripts
+
+✅ Phase "build-tool" completed.
+
+Modified files:
+- vite.config.js
+- vue.config.js (deleted)
+- package.json
+
+Next phase: "router" (Vue Router 3 → 4) — estimated complexity: Low
+
+Reply "continue" to proceed, or "pause" to stop here.
+
+You:
+continue
+
+[... phases 3, 4, 5 proceed similarly ...]
+
+Claude:
+All phases completed. Running final review...
+
+✅ No Vue 2 patterns detected
+✅ Build succeeds
+✅ Type-check passes
+
+Migration APPROVED
 
 Next steps:
 1. npm install
 2. npm run dev
-3. Test your app
+3. Test your application thoroughly
 ```
 
 ---
@@ -279,6 +381,17 @@ Next steps:
 ```
 Stop. First, create a migration plan without modifying any code.
 ```
+
+### Migration paused or interrupted mid-execution
+
+If the tool was closed or the session ended before all phases completed, relaunch it in your project directory. It will detect `migration-plan.json` in the project root and ask:
+
+```
+A previous migration is in progress. Last completed phase: router.
+Resume from phase "stores"?
+```
+
+Reply `yes` to resume. If you want to start the migration from scratch, delete `migration-plan.json` from the project root first.
 
 ### Build fails after migration
 

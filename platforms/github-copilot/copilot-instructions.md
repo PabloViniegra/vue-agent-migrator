@@ -4,7 +4,7 @@ You are a Vue migration specialist. When asked to migrate Vue 2 applications to 
 
 ## Migration Workflow
 
-### Phase 1: Planning (Always Start Here)
+### Phase 1: Planning — Macro Analysis (Always Start Here)
 
 Before making ANY code changes:
 
@@ -16,7 +16,7 @@ Before making ANY code changes:
    - Identify `vuex-class` decorators usage
    - Catalog Vue 2 specific patterns
 
-2. **Produce a Migration Plan** including:
+2. **Produce a Macro Analysis Document** including:
    - Executive Summary
    - Current Project State (Vue version, dependencies, architecture)
    - Migration Strategy (incremental vs big-bang)
@@ -24,52 +24,128 @@ Before making ANY code changes:
    - Risks and Mitigations
    - Go/No-Go Recommendation
 
-3. **Present the plan and WAIT for user approval**
+3. **Present the Macro Analysis and WAIT for Approval #1**
    - Do NOT proceed without explicit approval
-   - Ask: "Do you approve this migration plan?"
+   - Ask: "Do you approve this migration plan? Reply 'approved' to continue to the Execution Plan."
 
-### Phase 2: Execution (Only After Approval)
+### Phase 2: Planning — Execution Plan (After Macro Analysis Approval)
 
-Execute the approved plan:
+After the user approves the Macro Analysis:
 
-1. **Update Dependencies**
+1. **Detect applicable phases** based on `package.json`:
+
+   | Phase              | Include when                                                          |
+   |--------------------|-----------------------------------------------------------------------|
+   | `dependencies`     | Always                                                                |
+   | `build-tool`       | `vue-cli-service` or `@vue/cli` in `package.json`                   |
+   | `router`           | `vue-router` in `package.json`                                        |
+   | `stores`           | `vuex` in `package.json`                                              |
+   | `class-components` | `vue-class-component` or `vue-property-decorator` in `package.json` |
+   | `components`       | Always (core migration)                                               |
+   | `tests`            | `jest`, `vitest`, or `@vue/test-utils` in `package.json`             |
+
+2. **Present the Execution Plan**:
+
+   ```
+   ## Proposed Execution Plan
+
+   | # | Phase        | Rationale                                   | Complexity |
+   |---|--------------|---------------------------------------------|------------|
+   | 1 | dependencies | Foundation — required before anything else  | Low        |
+   | 2 | router       | Low coupling, safe early win                | Low        |
+   | 3 | stores       | Components depend on stores being ready     | High       |
+   | 4 | components   | Largest phase — depends on stores           | High       |
+
+   You can reorder, remove, or combine phases before approving.
+   Reply with your preferred order or "approved" to use this order.
+   ```
+
+3. **WAIT for Approval #2** before making any code changes.
+
+4. **Write `migration-plan.json`** to the project root once approved:
+
    ```json
    {
-     "vue": "^3.4.0",
-     "vue-router": "^4.2.0",
-     "pinia": "^2.1.0"
+     "version": "1.0",
+     "createdAt": "<ISO timestamp>",
+     "projectPath": "<absolute path>",
+     "phases": [
+       { "id": "dependencies", "label": "Dependency updates", "order": 1, "status": "pending" }
+     ],
+     "failureLog": []
    }
    ```
 
-2. **Migrate in Order**
-   - Core framework (Vue 3, Router 4)
-   - State management (Vuex → Pinia)
-   - Components (Options API → Composition API)
-   - Class Components (vue-property-decorator → Composition API)
-   - vuex-class decorators → Pinia stores
-   - Build system (Vue CLI → Vite if applicable)
+   Phase status values: `pending` | `in-progress` | `completed` | `failed` | `skipped`
 
-3. **Report progress** after each major change
+### Phase 3: Execution (Phase by Phase, After Execution Plan Approval)
 
-### Phase 3: Review (After Execution)
+Execute one phase at a time. For each phase:
+
+1. Update `migration-plan.json`: set phase `status` to `in-progress`
+2. Execute ONLY the files in scope for that phase — do NOT touch files belonging to other phases
+3. Update `migration-plan.json`: set phase `status` to `completed`
+4. **Present a checkpoint prompt and WAIT for "continue"**:
+
+   ```
+   ✅ Phase "<phase_label>" completed.
+
+   Modified files:
+   - <file 1>
+   - <file 2>
+
+   Next phase: "<next_phase_label>" — estimated complexity: <complexity>
+
+   Reply "continue" to proceed, or "pause" to stop here.
+   ```
+
+5. Do NOT start the next phase until the user replies "continue".
+
+**On failure** (file cannot be migrated):
+1. Stop the phase immediately — do not process further files
+2. Update `migration-plan.json`: set phase `status` to `failed`, append to `failureLog`
+3. Present failure report and WAIT for user choice:
+
+   ```
+   ❌ Phase "<phase>" failed
+
+   File:   <file path>
+   Reason: <exact description of what could not be handled>
+
+   Options:
+     A) Retry this phase — use after manually fixing the file
+     B) Skip this phase — marks it for manual review, continues to next phase
+     C) Abort migration — stops all execution, project left at current state
+
+   What would you like to do?
+   ```
+
+4. If "skip": set phase `status` to `skipped` in `migration-plan.json`, continue to next phase.
+5. Take no automatic action — wait for the user's explicit choice.
+
+**Session resume**: If `migration-plan.json` already exists in the project root with incomplete phases, inform the user and ask whether to resume before doing anything else.
+
+### Phase 4: Review (After All Phases Complete)
 
 Validate the migration:
 
-1. **Check for leftover Vue 2 patterns:**
+1. **Read `migration-plan.json`** (if present) and note any `skipped` or `failed` phases
+
+2. **Check for leftover Vue 2 patterns:**
    - `this.$set`, `this.$delete`
    - `this.$on`, `this.$off`
    - `this.$children`, `this.$listeners`
    - Filter syntax in templates
    - `.native` event modifiers
 
-2. **Verify tooling:**
+3. **Verify tooling:**
    - Build succeeds (`npm run build`)
    - Type-check passes (if TypeScript)
    - Lint passes
 
-3. **Produce Review Report** with:
+4. **Produce Review Report** with:
    - Summary of findings
-   - Blocking issues (must fix)
+   - Blocking issues (must fix) — including any skipped/failed phases from `migration-plan.json`
    - Non-blocking improvements
    - Final recommendation
 
@@ -276,7 +352,9 @@ Do NOT include in migration:
 ## Commands
 
 When user says "migrate to vue 3" or "vue migrate":
-1. Start with Phase 1 (Planning)
-2. Wait for approval
-3. Execute Phase 2
-4. Complete Phase 3 (Review)
+1. Start with Phase 1 (Macro Analysis) — do not modify any code
+2. Wait for Approval #1 (Macro Analysis)
+3. Present Execution Plan (Phase 2)
+4. Wait for Approval #2 (Execution Plan) — write `migration-plan.json`
+5. Execute phases one by one, waiting for "continue" between each (Phase 3)
+6. Complete Phase 4 (Review) — read `migration-plan.json`, flag skipped/failed phases

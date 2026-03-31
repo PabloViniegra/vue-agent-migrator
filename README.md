@@ -65,6 +65,17 @@ In your Vue 2 project, use your AI assistant:
 - **Claude Code**: `/vue-migrate`
 - **Other platforms**: Ask "migrate to Vue 3"
 
+### 5. Two-Step Planning Approval
+
+The migration uses a two-approval planning flow:
+
+1. **Macro Analysis approval** — Review the full project analysis and approve before any execution begins
+2. **Execution Plan approval** — Review and optionally reorder/remove the proposed phases, then approve
+
+### 6. Phase-by-Phase Execution
+
+After both approvals, the migration runs one phase at a time. After each phase completes you will see a checkpoint prompt listing modified files and asking you to `continue` or `pause`. A `migration-plan.json` file is written to your project root to track progress — if the session is interrupted, relaunching the tool will detect this file and offer to resume from the last incomplete phase.
+
 ## Installation Options
 
 ### Option A: Interactive Installer (Recommended)
@@ -204,25 +215,32 @@ This system implements a phased migration workflow with strict approval gates:
 
 ## Workflow
 
-### Phase 1: Planning
+### Phase 1: Planning — Macro Analysis
 1. AI analyzes the project structure
 2. Identifies Vue 2 patterns (Vuex, mixins, filters, Options API)
 3. Audits dependencies for Vue 3 compatibility
-4. Produces a Migration Plan document
-5. **Waits for your approval**
+4. Produces a **Migration Analysis & Trade-offs Document**
+5. **Waits for your approval (Approval #1)**
 
-### Phase 2: Execution (After Approval)
-1. Updates dependencies (Vue 3, Router 4, Pinia)
-2. Migrates Vuex stores to Pinia
-3. Converts components to Composition API
-4. Updates build tooling
-5. Reports progress throughout
+### Phase 2: Planning — Execution Plan
+1. After Macro Analysis approval, the planner proposes an ordered set of migration phases
+2. Phases are detected dynamically based on your project's dependencies
+3. You can reorder, remove, or combine phases before approving
+4. **Waits for your approval (Approval #2)**
+5. Once approved, `migration-plan.json` is written to your project root to track progress
 
-### Phase 3: Review
+### Phase 3: Execution (Phase by Phase)
+For each approved phase (e.g., dependencies → build-tool → router → stores → components):
+1. Executes that phase in isolation
+2. After each phase: lists modified files and waits for you to `continue` or `pause`
+3. On failure: stops immediately, reports the file and reason, offers retry / skip / abort
+
+### Phase 4: Review
 1. Validates no Vue 2 patterns remain
 2. Checks build and type-check pass
-3. Produces Final Review Report
-4. Issues recommendation (Approve/Fix/Reject)
+3. Reads `migration-plan.json` to flag any skipped or failed phases as blocking issues
+4. Produces Final Review Report
+5. Issues recommendation (Approve / Approve with fixes / Reject)
 
 ## What Gets Migrated
 
@@ -407,6 +425,9 @@ Explicitly ask: "Analyze this project and create a migration plan first"
 
 **AI proceeds without approval:**
 Add to instructions: "Wait for my explicit approval before making any changes"
+
+**Migration paused or interrupted mid-execution:**
+Relaunch the tool in your project directory. It will detect `migration-plan.json` in the project root and offer to resume from the last incomplete phase. If you want to start fresh, delete `migration-plan.json` first.
 
 ## Contributing
 

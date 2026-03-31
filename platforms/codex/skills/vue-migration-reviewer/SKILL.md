@@ -227,6 +227,24 @@ const router = createRouter({
 - [ ] No circular dependencies
 - [ ] Proper code splitting
 
+## migration-plan.json Review
+
+If `migration-plan.json` exists in the project root, read it before starting the review.
+
+In the **Blocking Issues** section of the Final Review Report, include a dedicated subsection:
+
+### Skipped and Failed Phases
+
+List all phases with `status: "skipped"` or `status: "failed"` from `migration-plan.json`:
+
+| Phase | Status | Reason (from failureLog) |
+|-------|--------|--------------------------|
+| stores | skipped | Manual review required |
+
+Each skipped or failed phase is a **blocking issue** — the migration is incomplete until these are resolved manually or re-executed.
+
+If no phases were skipped or failed, state: "All phases completed successfully."
+
 ## Output Document
 
 You MUST produce a **Final Migration Review Report** with this structure:
