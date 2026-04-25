@@ -213,6 +213,92 @@ show_checkbox_menu() {
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Skill installation (global — covers all platforms at once)
+# ─────────────────────────────────────────────────────────────────────────────
+
+install_skills() {
+    echo ""
+    echo -e "${CYAN}  ---------------------------------------------------------${NC}"
+    echo -e "    ${MAGENTA}Step 1${NC}  ${WHITE}Installing Agent Skills${NC}  ${GRAY}(global · all platforms)${NC}"
+    echo -e "${CYAN}  ---------------------------------------------------------${NC}"
+    echo ""
+
+    if ! command -v npx &> /dev/null; then
+        echo -e "    ${YELLOW}⚠  npx not found${NC} — skipping skill installation"
+        echo -e "    ${GRAY}Install manually after setup:${NC}"
+        echo -e "    ${GRAY}  npx skills add antfu/skills@vue -g -y${NC}"
+        echo -e "    ${GRAY}  npx skills add harlan-zw/vue-ecosystem-skills@vue-i18n-skilld -g -y${NC}"
+        echo -e "    ${GRAY}  npx skills add existential-birds/beagle@vitest-testing -g -y${NC}"
+        echo ""
+        return 0
+    fi
+
+    local -a SKILLS=(
+        "antfu/skills@vue"
+        "harlan-zw/vue-ecosystem-skills@vue-i18n-skilld"
+        "existential-birds/beagle@vitest-testing"
+    )
+    local -a LABELS=(
+        "vue               Vue 3 Composition API best practices"
+        "vue-i18n-skilld   vue-i18n v8->v9 breaking changes"
+        "vitest-testing    Vitest test patterns"
+    )
+
+    for i in "${!SKILLS[@]}"; do
+        print_step "Installing ${LABELS[$i]}..."
+        if npx skills add "${SKILLS[$i]}" -g -y > /dev/null 2>&1; then
+            print_success "${LABELS[$i]}"
+        else
+            echo -e "    ${YELLOW}⚠  Could not install ${SKILLS[$i]} — skipping${NC}"
+        fi
+        sleep 0.1
+    done
+
+    echo ""
+    print_info "Skills installed to ${CYAN}~/.agents/skills/${NC}"
+    print_info "Available to all platforms automatically"
+    echo ""
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Helper: copy agent background skills from global to a local project directory
+# Usage: copy_agent_skills_local <local_dir> [mdc]
+#   Pass "mdc" as second arg to copy SKILL.md as <name>.mdc (for Cursor rules)
+# ─────────────────────────────────────────────────────────────────────────────
+
+copy_agent_skills_local() {
+    local local_dir="$1"
+    local mode="${2:-dir}"
+    local global_skills_dir="$HOME/.agents/skills"
+    local bg_skills=("vue" "vue-i18n-skilld" "vitest-testing")
+    local copied_any=0
+
+    mkdir -p "$local_dir"
+
+    for bg_skill in "${bg_skills[@]}"; do
+        local src="$global_skills_dir/$bg_skill"
+        if [ -d "$src" ]; then
+            if [ "$mode" = "mdc" ]; then
+                local skill_file="$src/SKILL.md"
+                if [ -f "$skill_file" ]; then
+                    cp "$skill_file" "$local_dir/$bg_skill.mdc" 2>/dev/null || true
+                    print_info "${GREEN}${SYMBOL_CHECK}${NC} $bg_skill.mdc (agent skill)"
+                fi
+            else
+                cp -r "$src" "$local_dir/" 2>/dev/null || true
+                print_info "${GREEN}${SYMBOL_CHECK}${NC} $bg_skill (agent skill)"
+            fi
+            copied_any=1
+        fi
+    done
+
+    if [ $copied_any -eq 0 ]; then
+        echo -e "    ${YELLOW}⚠  Agent skills not found in $global_skills_dir${NC}"
+        echo -e "    ${GRAY}Run install with npm/npx available so Step 1 can install them${NC}"
+    fi
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Installation functions
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -236,10 +322,15 @@ install_claude_code() {
     cp "$SCRIPT_DIR/platforms/claude-code/commands/"*.md "$TARGET_DIR/.claude/commands/" 2>/dev/null || true
     sleep 0.2
 
+    print_step "Copying agent background skills to project..."
+    copy_agent_skills_local "$TARGET_DIR/.claude/skills"
+    sleep 0.2
+
     echo ""
     print_success "Claude Code installation complete!"
     print_info "Agents   -> ${CYAN}$TARGET_DIR/.claude/agents/${NC}"
     print_info "Commands -> ${CYAN}$TARGET_DIR/.claude/commands/${NC}"
+    print_info "Skills   -> ${CYAN}$TARGET_DIR/.claude/skills/${NC}"
     echo ""
     echo -e "    ${YELLOW}Usage:${NC} Run ${GREEN}/vue-migrate${NC} in Claude Code"
 }
@@ -259,9 +350,14 @@ install_github_copilot() {
     cp "$SCRIPT_DIR/platforms/github-copilot/agents/"*.md "$TARGET_DIR/.github/agents/" 2>/dev/null || true
     sleep 0.2
 
+    print_step "Copying agent background skills to project..."
+    copy_agent_skills_local "$TARGET_DIR/.github/skills"
+    sleep 0.2
+
     echo ""
     print_success "GitHub Copilot installation complete!"
     print_info "Agents -> ${CYAN}$TARGET_DIR/.github/agents/${NC}"
+    print_info "Skills -> ${CYAN}$TARGET_DIR/.github/skills/${NC}"
     echo ""
     echo -e "    ${YELLOW}Usage:${NC} Ask Copilot to ${GREEN}'migrate to Vue 3'${NC}"
 }
@@ -288,6 +384,9 @@ install_codex() {
         sleep 0.1
     done
 
+    print_step "Copying agent background skills to project..."
+    copy_agent_skills_local "$TARGET_DIR/.codex/skills"
+
     echo ""
     print_success "Codex CLI installation complete!"
     print_info "Skills -> ${CYAN}$TARGET_DIR/.codex/skills/${NC}"
@@ -311,9 +410,14 @@ install_gemini() {
     cp "$SCRIPT_DIR/platforms/gemini/agents/"*.md "$TARGET_DIR/.gemini/agents/" 2>/dev/null || true
     sleep 0.2
 
+    print_step "Copying agent background skills to project..."
+    copy_agent_skills_local "$TARGET_DIR/.gemini/skills"
+    sleep 0.2
+
     echo ""
     print_success "Gemini CLI installation complete!"
     print_info "Agents -> ${CYAN}$TARGET_DIR/.gemini/agents/${NC}"
+    print_info "Skills -> ${CYAN}$TARGET_DIR/.gemini/skills/${NC}"
     echo ""
     echo -e "    ${YELLOW}Usage:${NC} Ask Gemini to ${GREEN}'migrate to Vue 3'${NC}"
 }
@@ -331,15 +435,16 @@ install_opencode() {
 
     print_step "Copying agent files..."
     cp "$SCRIPT_DIR/platforms/opencode/agents/"*.md "$TARGET_DIR/.opencode/agents/" 2>/dev/null || true
-    print_info "${GREEN}${SYMBOL_CHECK}${NC} vue-migrator.md ${GRAY}(mode: primary)${NC}"
-    print_info "${GREEN}${SYMBOL_CHECK}${NC} vue-migration-planner.md ${GRAY}(mode: subagent)${NC}"
-    print_info "${GREEN}${SYMBOL_CHECK}${NC} vue-migration-executor.md ${GRAY}(mode: subagent)${NC}"
-    print_info "${GREEN}${SYMBOL_CHECK}${NC} vue-migration-reviewer.md ${GRAY}(mode: subagent)${NC}"
+    sleep 0.2
+
+    print_step "Copying agent background skills to project..."
+    copy_agent_skills_local "$TARGET_DIR/.opencode/skills"
     sleep 0.2
 
     echo ""
     print_success "OpenCode installation complete!"
     print_info "Agents -> ${CYAN}$TARGET_DIR/.opencode/agents/${NC}"
+    print_info "Skills -> ${CYAN}$TARGET_DIR/.opencode/skills/${NC}"
     echo ""
     echo -e "    ${YELLOW}Usage:${NC} Ask OpenCode to ${GREEN}'migrate vue'${NC} or use ${CYAN}@vue-migrator${NC}"
 }
@@ -359,9 +464,14 @@ install_antigravity() {
     cp "$SCRIPT_DIR/platforms/antigravity/rules/vue-migration.md" "$TARGET_DIR/.agents/rules/" 2>/dev/null || true
     sleep 0.2
 
+    print_step "Copying agent background skills to project..."
+    copy_agent_skills_local "$TARGET_DIR/.agents/skills"
+    sleep 0.2
+
     echo ""
     print_success "Antigravity installation complete!"
-    print_info "Rules -> ${CYAN}$TARGET_DIR/.agents/rules/${NC}"
+    print_info "Rules  -> ${CYAN}$TARGET_DIR/.agents/rules/${NC}"
+    print_info "Skills -> ${CYAN}$TARGET_DIR/.agents/skills/${NC}"
     echo ""
     echo -e "    ${YELLOW}Usage:${NC} Ask Antigravity to ${GREEN}'migrate to Vue 3'${NC}"
 }
@@ -379,6 +489,10 @@ install_cursor() {
 
     print_step "Copying rule file..."
     cp "$SCRIPT_DIR/platforms/cursor/rules/vue-migration.mdc" "$TARGET_DIR/.cursor/rules/" 2>/dev/null || true
+    sleep 0.2
+
+    print_step "Copying agent background skills to project..."
+    copy_agent_skills_local "$TARGET_DIR/.cursor/rules" "mdc"
     sleep 0.2
 
     echo ""
@@ -431,6 +545,9 @@ main() {
 
     echo ""
     echo -e "  ${GRAY}Target:${NC} ${CYAN}$TARGET_DIR${NC}"
+
+    # Install skills globally (covers all platforms at once)
+    install_skills
 
     # Interactive checkbox menu
     SELECTED_PLATFORMS=()

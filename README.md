@@ -43,7 +43,21 @@ chmod +x install.sh
 install.bat C:\path\to\your\vue2-project
 ```
 
-### 3. Select Your Platform
+### 3. Agent Skills (Automatic)
+
+The installer automatically installs **agent skills** globally via `npx skills`. Skills provide specialized domain knowledge to the AI agents across **all platforms** simultaneously:
+
+| Skill | Knowledge domain |
+|-------|-----------------|
+| `antfu/skills@vue` | Vue 3 Composition API best practices and idiomatic patterns |
+| `harlan-zw/vue-ecosystem-skills@vue-i18n-skilld` | vue-i18n v8→v9 breaking changes and Composition API mode |
+| `existential-birds/beagle@vitest-testing` | Vitest testing patterns and async assertions |
+
+Skills are installed to `~/.agents/skills/` and are picked up automatically by Claude Code, OpenCode, Cursor, Gemini CLI, GitHub Copilot, Codex, and Windsurf.
+
+> **Requires Node.js/npx.** If `npx` is not found, the installer will show manual install commands you can run afterwards.
+
+### 4. Select Your Platform
 
 The installer will prompt you to choose your AI assistant:
 

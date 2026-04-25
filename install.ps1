@@ -192,6 +192,87 @@ function Show-CheckboxMenu {
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Skill installation (global — covers all platforms at once)
+# ─────────────────────────────────────────────────────────────────────────────
+
+function Install-Skills {
+    Write-Host ""
+    Write-Host "  ---------------------------------------------------------" -ForegroundColor Cyan
+    Write-Host "    Step 1  " -ForegroundColor Magenta -NoNewline
+    Write-Host "Installing Agent Skills  " -ForegroundColor White -NoNewline
+    Write-Host "(global, all platforms)" -ForegroundColor DarkGray
+    Write-Host "  ---------------------------------------------------------" -ForegroundColor Cyan
+    Write-Host ""
+
+    if (-not (Get-Command npx -ErrorAction SilentlyContinue)) {
+        Write-Host "    WARNING: npx not found - skipping skill installation" -ForegroundColor Yellow
+        Write-Host "    Install manually after setup:" -ForegroundColor DarkGray
+        Write-Host "      npx skills add antfu/skills@vue -g -y" -ForegroundColor DarkGray
+        Write-Host "      npx skills add harlan-zw/vue-ecosystem-skills@vue-i18n-skilld -g -y" -ForegroundColor DarkGray
+        Write-Host "      npx skills add existential-birds/beagle@vitest-testing -g -y" -ForegroundColor DarkGray
+        Write-Host ""
+        return
+    }
+
+    $skills = @(
+        @{ Pkg = "antfu/skills@vue";                                Label = "vue               Vue 3 Composition API best practices" },
+        @{ Pkg = "harlan-zw/vue-ecosystem-skills@vue-i18n-skilld";  Label = "vue-i18n-skilld   vue-i18n v8->v9 breaking changes" },
+        @{ Pkg = "existential-birds/beagle@vitest-testing";          Label = "vitest-testing    Vitest test patterns" }
+    )
+
+    foreach ($skill in $skills) {
+        Write-Step ("Installing " + $skill.Label + "...")
+        $null = & npx skills add $skill.Pkg -g -y 2>&1
+        if ($LASTEXITCODE -eq 0) {
+            Write-Success $skill.Label
+        } else {
+            Write-Host "    WARNING: Could not install $($skill.Pkg) - skipping" -ForegroundColor Yellow
+        }
+        Start-Sleep -Milliseconds 100
+    }
+
+    Write-Host ""
+    Write-Info "Skills installed to ~\.agents\skills\"
+    Write-Info "Available to all platforms automatically"
+    Write-Host ""
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Helper: copy agent background skills from global to a local project directory
+# ─────────────────────────────────────────────────────────────────────────────
+
+function Copy-AgentSkillsToLocal {
+    param(
+        [Parameter(Mandatory=$true)][string]$LocalSkillsDir,
+        [switch]$AsMdc  # For Cursor: copy SKILL.md as <name>.mdc instead of full directory
+    )
+    $globalSkillsDir = Join-Path $env:USERPROFILE ".agents\skills"
+    $bgSkills = @("vue", "vue-i18n-skilld", "vitest-testing")
+    $copiedAny = $false
+    New-Item -ItemType Directory -Force -Path $LocalSkillsDir | Out-Null
+    foreach ($bgSkill in $bgSkills) {
+        $src = Join-Path $globalSkillsDir $bgSkill
+        if (Test-Path $src) {
+            if ($AsMdc) {
+                $skillFile = Join-Path $src "SKILL.md"
+                if (Test-Path $skillFile) {
+                    Copy-Item $skillFile -Destination (Join-Path $LocalSkillsDir "$bgSkill.mdc") -Force
+                    Write-Info "$bgSkill.mdc (agent skill)"
+                }
+            } else {
+                Copy-Item $src -Destination $LocalSkillsDir -Recurse -Force
+                Write-Info "$bgSkill (agent skill)"
+            }
+            $copiedAny = $true
+        }
+    }
+    if (-not $copiedAny) {
+        Write-Host "    WARNING: Agent skills not found in $globalSkillsDir" -ForegroundColor Yellow
+        Write-Host "    Run install with npm/npx available so Step 1 can install them" -ForegroundColor DarkGray
+    }
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Installation functions
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -224,10 +305,15 @@ function Install-ClaudeCode {
     }
     Start-Sleep -Milliseconds 200
 
+    Write-Step "Copying agent background skills to project..."
+    Copy-AgentSkillsToLocal (Join-Path $TargetPath ".claude\skills")
+    Start-Sleep -Milliseconds 200
+
     Write-Host ""
     Write-Success "Claude Code installation complete!"
     Write-Info "Agents   -> $agentsDir"
     Write-Info "Commands -> $commandsDir"
+    Write-Info "Skills   -> $(Join-Path $TargetPath ".claude\skills")"
     Write-Host ""
     Write-Host "    Usage: " -ForegroundColor Yellow -NoNewline
     Write-Host "Run " -NoNewline
@@ -255,9 +341,14 @@ function Install-GitHubCopilot {
     }
     Start-Sleep -Milliseconds 200
 
+    Write-Step "Copying agent background skills to project..."
+    Copy-AgentSkillsToLocal (Join-Path $TargetPath ".github\skills")
+    Start-Sleep -Milliseconds 200
+
     Write-Host ""
     Write-Success "GitHub Copilot installation complete!"
     Write-Info "Agents -> $agentsDir"
+    Write-Info "Skills -> $(Join-Path $TargetPath ".github\skills")"
     Write-Host ""
     Write-Host "    Usage: " -ForegroundColor Yellow -NoNewline
     Write-Host "Ask Copilot to " -NoNewline
@@ -291,6 +382,10 @@ function Install-Codex {
     }
     Start-Sleep -Milliseconds 200
 
+    Write-Step "Copying agent background skills to project..."
+    Copy-AgentSkillsToLocal $skillsDir
+    Start-Sleep -Milliseconds 200
+
     Write-Host ""
     Write-Success "Codex CLI installation complete!"
     Write-Info ("Skills -> " + $skillsDir)
@@ -298,6 +393,7 @@ function Install-Codex {
     Write-Info "  vue-migration-planner"
     Write-Info "  vue-migration-executor"
     Write-Info "  vue-migration-reviewer"
+    Write-Info "  vue  |  vue-i18n-skilld  |  vitest-testing  (agent skills)"
     Write-Host ""
     Write-Host "    Usage: " -ForegroundColor Yellow -NoNewline
     Write-Host "Ask Codex to " -NoNewline
@@ -325,9 +421,14 @@ function Install-Gemini {
     }
     Start-Sleep -Milliseconds 200
 
+    Write-Step "Copying agent background skills to project..."
+    Copy-AgentSkillsToLocal (Join-Path $TargetPath ".gemini\skills")
+    Start-Sleep -Milliseconds 200
+
     Write-Host ""
     Write-Success "Gemini CLI installation complete!"
     Write-Info "Agents -> $agentsDir"
+    Write-Info "Skills -> $(Join-Path $TargetPath ".gemini\skills")"
     Write-Host ""
     Write-Host "    Usage: " -ForegroundColor Yellow -NoNewline
     Write-Host "Ask Gemini to " -NoNewline
@@ -354,13 +455,14 @@ function Install-OpenCode {
     }
     Start-Sleep -Milliseconds 200
 
+    Write-Step "Copying agent background skills to project..."
+    Copy-AgentSkillsToLocal (Join-Path $TargetPath ".opencode\skills")
+    Start-Sleep -Milliseconds 200
+
     Write-Host ""
     Write-Success "OpenCode installation complete!"
     Write-Info "Agents -> $agentsDir"
-    Write-Info "  vue-migrator.md (mode: primary)"
-    Write-Info "  vue-migration-planner.md (mode: subagent)"
-    Write-Info "  vue-migration-executor.md (mode: subagent)"
-    Write-Info "  vue-migration-reviewer.md (mode: subagent)"
+    Write-Info "Skills -> $(Join-Path $TargetPath ".opencode\skills")"
     Write-Host ""
     Write-Host "    Usage: " -ForegroundColor Yellow -NoNewline
     Write-Host "Ask OpenCode to " -NoNewline
@@ -389,9 +491,14 @@ function Install-Antigravity {
     }
     Start-Sleep -Milliseconds 200
 
+    Write-Step "Copying agent background skills to project..."
+    Copy-AgentSkillsToLocal (Join-Path $TargetPath ".agents\skills")
+    Start-Sleep -Milliseconds 200
+
     Write-Host ""
     Write-Success "Antigravity installation complete!"
-    Write-Info "Rules -> $rulesDir"
+    Write-Info "Rules  -> $rulesDir"
+    Write-Info "Skills -> $(Join-Path $TargetPath ".agents\skills")"
     Write-Host ""
     Write-Host "    Usage: " -ForegroundColor Yellow -NoNewline
     Write-Host "Ask Antigravity to " -NoNewline
@@ -418,9 +525,13 @@ function Install-Cursor {
     }
     Start-Sleep -Milliseconds 200
 
+    Write-Step "Copying agent background skills to project..."
+    Copy-AgentSkillsToLocal -LocalSkillsDir $rulesDir -AsMdc
+    Start-Sleep -Milliseconds 200
+
     Write-Host ""
     Write-Success "Cursor installation complete!"
-    Write-Info "Rules -> $rulesDir"
+    Write-Info "Rules  -> $rulesDir"
     Write-Host ""
     Write-Host "    Usage: " -ForegroundColor Yellow -NoNewline
     Write-Host "Ask Cursor to " -NoNewline
@@ -485,6 +596,9 @@ function Main {
     Write-Host ""
     Write-Host "  Target: " -ForegroundColor DarkGray -NoNewline
     Write-Host $TargetPath -ForegroundColor Cyan
+
+    # Install skills globally (covers all platforms at once)
+    Install-Skills
 
     # ── Non-interactive mode (parameter) ──
     if ($Platform) {

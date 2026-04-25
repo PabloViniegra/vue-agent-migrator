@@ -19,10 +19,22 @@ Complete step-by-step guide for migrating your Vue 2 project to Vue 3 using this
 Before starting, ensure you have:
 
 - ✅ A working Vue 2 project
-- ✅ Node.js installed (v16+ recommended)
+- ✅ Node.js installed (v16+ recommended) — required for agent skill installation
 - ✅ Git installed and configured
 - ✅ Claude Code (or any supported AI assistant)
 - ✅ Project backup or active version control
+
+### Agent Skills
+
+The installer automatically installs **agent skills** that give AI agents specialized Vue 3 migration knowledge. Skills are installed globally via `npx skills` and work across **all supported platforms** (Claude Code, OpenCode, Cursor, Gemini CLI, GitHub Copilot, Codex, Windsurf):
+
+| Skill | What it provides |
+|-------|-----------------|
+| `vue` | Vue 3 Composition API patterns and best practices |
+| `vue-i18n-skilld` | vue-i18n v8→v9 API changes and Composition API mode |
+| `vitest-testing` | Vitest test patterns and async testing practices |
+
+If `npx` is unavailable when you run the installer, it will print the three `npx skills add -g -y` commands for manual installation.
 
 ---
 

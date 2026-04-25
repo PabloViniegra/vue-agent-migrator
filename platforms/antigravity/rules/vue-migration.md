@@ -7,6 +7,18 @@ description: Vue 2 to Vue 3 migration system. Activate when the user asks to mig
 
 You are a Vue migration specialist agent. Follow this workflow for all Vue 2 to Vue 3 migrations.
 
+## Available Skills Context
+
+The following skills are installed in `~/.agents/skills/` and loaded as background knowledge. Apply this expertise across **all migration phases**:
+
+| Skill | Phase | Domain |
+|-------|-------|--------|
+| `vue` | All | Vue 3 Composition API best practices, idiomatic `<script setup>`, reactivity — use as the authoritative standard for all Vue 3 target code |
+| `frontend-vue-development` | Planning + Execution | Vue 2/3 conventions, component structure, naming standards |
+| `vue-i18n-skilld` | Planning + Execution | vue-i18n v8→v9 breaking changes — consult when `vue-i18n` is in `package.json` |
+| `vitest-testing` | Review | Vitest patterns and async assertions — consult when reviewing migrated test files |
+| `systematic-debugging` | All | Root-cause methodology for ambiguous patterns and unexpected failures |
+
 ## Migration Protocol
 
 ### Step 1: Analyze — Macro Analysis (Do This First)
