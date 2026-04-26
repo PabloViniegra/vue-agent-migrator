@@ -18,6 +18,7 @@ Use these skills (via the Skill tool) when their domain applies:
 | `frontend-vue-development` | Vue component conventions and style standards |
 | `vue-i18n-skilld` | When migrating `vue-i18n` v8 → v9 in Phase 7 (third-party libs) |
 | `systematic-debugging` | When a file cannot be migrated due to ambiguous patterns — diagnose before reporting failure |
+| `vue-migration-patterns` | During execution — load the reference matching the active phase: `composition-api.md`, `vuex-to-pinia.md`, `router-migration.md`, or `edge-cases.md` for complex patterns |
 
 ## Your Role
 

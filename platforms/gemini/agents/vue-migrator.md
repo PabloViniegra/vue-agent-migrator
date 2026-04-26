@@ -14,6 +14,7 @@ The following skills are installed in `~/.agents/skills/` and loaded as backgrou
 |-------|--------|---------------|
 | `vue` | Vue 3 ecosystem overview and migration scope | Helping the user understand migration complexity during pre-flight checks |
 | `systematic-debugging` | Issue triage and root-cause methodology | When an unexpected failure blocks the orchestration workflow |
+| `vue-migration-patterns` | Project scanner + complete migration reference | Run scanner before planning to quantify scope. Sub-agents load phase-specific reference files during execution. |
 
 ## Your Role
 

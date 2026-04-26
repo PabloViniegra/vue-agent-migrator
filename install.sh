@@ -299,6 +299,36 @@ copy_agent_skills_local() {
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Helper: copy custom skills bundled in this repo to a local project directory
+# Usage: copy_custom_skills_local <local_dir> [mdc]
+# ─────────────────────────────────────────────────────────────────────────────
+
+copy_custom_skills_local() {
+    local local_dir="$1"
+    local mode="${2:-dir}"
+    local custom_skills_dir="$SCRIPT_DIR/skills"
+
+    [ -d "$custom_skills_dir" ] || return 0
+    mkdir -p "$local_dir"
+
+    for skill_dir in "$custom_skills_dir"/*/; do
+        [ -d "$skill_dir" ] || continue
+        local skill_name
+        skill_name=$(basename "$skill_dir")
+        if [ "$mode" = "mdc" ]; then
+            local skill_file="$skill_dir/SKILL.md"
+            if [ -f "$skill_file" ]; then
+                cp "$skill_file" "$local_dir/$skill_name.mdc" 2>/dev/null || true
+                print_info "${GREEN}${SYMBOL_CHECK}${NC} $skill_name.mdc (custom skill)"
+            fi
+        else
+            cp -r "$skill_dir" "$local_dir/" 2>/dev/null || true
+            print_info "${GREEN}${SYMBOL_CHECK}${NC} $skill_name (custom skill)"
+        fi
+    done
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Installation functions
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -324,6 +354,10 @@ install_claude_code() {
 
     print_step "Copying agent background skills to project..."
     copy_agent_skills_local "$TARGET_DIR/.claude/skills"
+    sleep 0.2
+
+    print_step "Copying custom bundled skills to project..."
+    copy_custom_skills_local "$TARGET_DIR/.claude/skills"
     sleep 0.2
 
     echo ""
@@ -352,6 +386,10 @@ install_github_copilot() {
 
     print_step "Copying agent background skills to project..."
     copy_agent_skills_local "$TARGET_DIR/.github/skills"
+    sleep 0.2
+
+    print_step "Copying custom bundled skills to project..."
+    copy_custom_skills_local "$TARGET_DIR/.github/skills"
     sleep 0.2
 
     echo ""
@@ -386,6 +424,11 @@ install_codex() {
 
     print_step "Copying agent background skills to project..."
     copy_agent_skills_local "$TARGET_DIR/.codex/skills"
+    sleep 0.2
+
+    print_step "Copying custom bundled skills to project..."
+    copy_custom_skills_local "$TARGET_DIR/.codex/skills"
+    sleep 0.2
 
     echo ""
     print_success "Codex CLI installation complete!"
@@ -412,6 +455,10 @@ install_gemini() {
 
     print_step "Copying agent background skills to project..."
     copy_agent_skills_local "$TARGET_DIR/.gemini/skills"
+    sleep 0.2
+
+    print_step "Copying custom bundled skills to project..."
+    copy_custom_skills_local "$TARGET_DIR/.gemini/skills"
     sleep 0.2
 
     echo ""
@@ -441,6 +488,10 @@ install_opencode() {
     copy_agent_skills_local "$TARGET_DIR/.opencode/skills"
     sleep 0.2
 
+    print_step "Copying custom bundled skills to project..."
+    copy_custom_skills_local "$TARGET_DIR/.opencode/skills"
+    sleep 0.2
+
     echo ""
     print_success "OpenCode installation complete!"
     print_info "Agents -> ${CYAN}$TARGET_DIR/.opencode/agents/${NC}"
@@ -468,6 +519,10 @@ install_antigravity() {
     copy_agent_skills_local "$TARGET_DIR/.agents/skills"
     sleep 0.2
 
+    print_step "Copying custom bundled skills to project..."
+    copy_custom_skills_local "$TARGET_DIR/.agents/skills"
+    sleep 0.2
+
     echo ""
     print_success "Antigravity installation complete!"
     print_info "Rules  -> ${CYAN}$TARGET_DIR/.agents/rules/${NC}"
@@ -493,6 +548,10 @@ install_cursor() {
 
     print_step "Copying agent background skills to project..."
     copy_agent_skills_local "$TARGET_DIR/.cursor/rules" "mdc"
+    sleep 0.2
+
+    print_step "Copying custom bundled skills to project..."
+    copy_custom_skills_local "$TARGET_DIR/.cursor/rules" "mdc"
     sleep 0.2
 
     echo ""

@@ -30,6 +30,7 @@ The following skills are installed globally in `~/.agents/skills/` and their con
 | `frontend-vue-development` | Vue component conventions and style standards | Assessing code quality, naming, and structure |
 | `vitest-testing` | Vitest setup, mocking patterns, async assertions | Reviewing migrated test files (Phase 8 testing migration) |
 | `systematic-debugging` | Root-cause investigation methodology | When a blocking issue has an unclear root cause before reporting |
+| `vue-migration-patterns` | Breaking changes catalog + edge cases reference | Load `breaking-changes.md` + `edge-cases.md` to verify no Vue 2 patterns remain. Run scanner to confirm zero remaining issues. |
 
 ## Your Role
 

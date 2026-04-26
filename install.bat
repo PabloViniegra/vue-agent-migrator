@@ -176,6 +176,7 @@ set "GLOBAL_SKILLS=%USERPROFILE%\.agents\skills"
 if exist "%GLOBAL_SKILLS%\vue" xcopy /E /I /Y "%GLOBAL_SKILLS%\vue" "%TARGET_DIR%\.claude\skills\vue\" >nul 2>&1
 if exist "%GLOBAL_SKILLS%\vue-i18n-skilld" xcopy /E /I /Y "%GLOBAL_SKILLS%\vue-i18n-skilld" "%TARGET_DIR%\.claude\skills\vue-i18n-skilld\" >nul 2>&1
 if exist "%GLOBAL_SKILLS%\vitest-testing" xcopy /E /I /Y "%GLOBAL_SKILLS%\vitest-testing" "%TARGET_DIR%\.claude\skills\vitest-testing\" >nul 2>&1
+if exist "%SCRIPT_DIR%skills\vue-migration-patterns" xcopy /E /I /Y "%SCRIPT_DIR%skills\vue-migration-patterns" "%TARGET_DIR%\.claude\skills\vue-migration-patterns\" >nul 2>&1
 echo  [OK] Claude Code installation complete!
 echo       Agents:   %TARGET_DIR%\.claude\agents\
 echo       Commands: %TARGET_DIR%\.claude\commands\
@@ -195,6 +196,7 @@ set "GLOBAL_SKILLS=%USERPROFILE%\.agents\skills"
 if exist "%GLOBAL_SKILLS%\vue" xcopy /E /I /Y "%GLOBAL_SKILLS%\vue" "%TARGET_DIR%\.github\skills\vue\" >nul 2>&1
 if exist "%GLOBAL_SKILLS%\vue-i18n-skilld" xcopy /E /I /Y "%GLOBAL_SKILLS%\vue-i18n-skilld" "%TARGET_DIR%\.github\skills\vue-i18n-skilld\" >nul 2>&1
 if exist "%GLOBAL_SKILLS%\vitest-testing" xcopy /E /I /Y "%GLOBAL_SKILLS%\vitest-testing" "%TARGET_DIR%\.github\skills\vitest-testing\" >nul 2>&1
+if exist "%SCRIPT_DIR%skills\vue-migration-patterns" xcopy /E /I /Y "%SCRIPT_DIR%skills\vue-migration-patterns" "%TARGET_DIR%\.github\skills\vue-migration-patterns\" >nul 2>&1
 echo  [OK] GitHub Copilot installation complete!
 echo       Agents: %TARGET_DIR%\.github\agents\
 echo       Skills: %TARGET_DIR%\.github\skills\
@@ -225,6 +227,7 @@ if exist "%GLOBAL_SKILLS%\vue-i18n-skilld" (
 if exist "%GLOBAL_SKILLS%\vitest-testing" (
     xcopy /E /I /Y "%GLOBAL_SKILLS%\vitest-testing" "%TARGET_DIR%\.codex\skills\vitest-testing\" >nul 2>&1
 )
+if exist "%SCRIPT_DIR%skills\vue-migration-patterns" xcopy /E /I /Y "%SCRIPT_DIR%skills\vue-migration-patterns" "%TARGET_DIR%\.codex\skills\vue-migration-patterns\" >nul 2>&1
 echo  [OK] Codex CLI installation complete!
 echo       Skills: %TARGET_DIR%\.codex\skills\
 echo         - vue-migrator
@@ -232,6 +235,7 @@ echo         - vue-migration-planner
 echo         - vue-migration-executor
 echo         - vue-migration-reviewer
 echo         - vue  ^|  vue-i18n-skilld  ^|  vitest-testing  (agent skills)
+echo         - vue-migration-patterns  (custom skill)
 echo       Usage: Ask Codex to "migrate to Vue 3"
 goto :eof
 
@@ -247,6 +251,7 @@ set "GLOBAL_SKILLS=%USERPROFILE%\.agents\skills"
 if exist "%GLOBAL_SKILLS%\vue" xcopy /E /I /Y "%GLOBAL_SKILLS%\vue" "%TARGET_DIR%\.gemini\skills\vue\" >nul 2>&1
 if exist "%GLOBAL_SKILLS%\vue-i18n-skilld" xcopy /E /I /Y "%GLOBAL_SKILLS%\vue-i18n-skilld" "%TARGET_DIR%\.gemini\skills\vue-i18n-skilld\" >nul 2>&1
 if exist "%GLOBAL_SKILLS%\vitest-testing" xcopy /E /I /Y "%GLOBAL_SKILLS%\vitest-testing" "%TARGET_DIR%\.gemini\skills\vitest-testing\" >nul 2>&1
+if exist "%SCRIPT_DIR%skills\vue-migration-patterns" xcopy /E /I /Y "%SCRIPT_DIR%skills\vue-migration-patterns" "%TARGET_DIR%\.gemini\skills\vue-migration-patterns\" >nul 2>&1
 echo  [OK] Gemini CLI installation complete!
 echo       Agents: %TARGET_DIR%\.gemini\agents\
 echo       Skills: %TARGET_DIR%\.gemini\skills\
@@ -265,6 +270,7 @@ set "GLOBAL_SKILLS=%USERPROFILE%\.agents\skills"
 if exist "%GLOBAL_SKILLS%\vue" xcopy /E /I /Y "%GLOBAL_SKILLS%\vue" "%TARGET_DIR%\.opencode\skills\vue\" >nul 2>&1
 if exist "%GLOBAL_SKILLS%\vue-i18n-skilld" xcopy /E /I /Y "%GLOBAL_SKILLS%\vue-i18n-skilld" "%TARGET_DIR%\.opencode\skills\vue-i18n-skilld\" >nul 2>&1
 if exist "%GLOBAL_SKILLS%\vitest-testing" xcopy /E /I /Y "%GLOBAL_SKILLS%\vitest-testing" "%TARGET_DIR%\.opencode\skills\vitest-testing\" >nul 2>&1
+if exist "%SCRIPT_DIR%skills\vue-migration-patterns" xcopy /E /I /Y "%SCRIPT_DIR%skills\vue-migration-patterns" "%TARGET_DIR%\.opencode\skills\vue-migration-patterns\" >nul 2>&1
 echo  [OK] OpenCode installation complete!
 echo       Agents: %TARGET_DIR%\.opencode\agents\
 echo       Skills: %TARGET_DIR%\.opencode\skills\
@@ -283,6 +289,7 @@ set "GLOBAL_SKILLS=%USERPROFILE%\.agents\skills"
 if exist "%GLOBAL_SKILLS%\vue\SKILL.md" copy /Y "%GLOBAL_SKILLS%\vue\SKILL.md" "%TARGET_DIR%\.cursor\rules\vue.mdc" >nul 2>&1
 if exist "%GLOBAL_SKILLS%\vue-i18n-skilld\SKILL.md" copy /Y "%GLOBAL_SKILLS%\vue-i18n-skilld\SKILL.md" "%TARGET_DIR%\.cursor\rules\vue-i18n-skilld.mdc" >nul 2>&1
 if exist "%GLOBAL_SKILLS%\vitest-testing\SKILL.md" copy /Y "%GLOBAL_SKILLS%\vitest-testing\SKILL.md" "%TARGET_DIR%\.cursor\rules\vitest-testing.mdc" >nul 2>&1
+if exist "%SCRIPT_DIR%skills\vue-migration-patterns\SKILL.md" copy /Y "%SCRIPT_DIR%skills\vue-migration-patterns\SKILL.md" "%TARGET_DIR%\.cursor\rules\vue-migration-patterns.mdc" >nul 2>&1
 echo  [OK] Cursor installation complete!
 echo       Rules: %TARGET_DIR%\.cursor\rules\
 echo       Usage: Ask Cursor to "migrate to Vue 3"
@@ -300,6 +307,7 @@ set "GLOBAL_SKILLS=%USERPROFILE%\.agents\skills"
 if exist "%GLOBAL_SKILLS%\vue" xcopy /E /I /Y "%GLOBAL_SKILLS%\vue" "%TARGET_DIR%\.agents\skills\vue\" >nul 2>&1
 if exist "%GLOBAL_SKILLS%\vue-i18n-skilld" xcopy /E /I /Y "%GLOBAL_SKILLS%\vue-i18n-skilld" "%TARGET_DIR%\.agents\skills\vue-i18n-skilld\" >nul 2>&1
 if exist "%GLOBAL_SKILLS%\vitest-testing" xcopy /E /I /Y "%GLOBAL_SKILLS%\vitest-testing" "%TARGET_DIR%\.agents\skills\vitest-testing\" >nul 2>&1
+if exist "%SCRIPT_DIR%skills\vue-migration-patterns" xcopy /E /I /Y "%SCRIPT_DIR%skills\vue-migration-patterns" "%TARGET_DIR%\.agents\skills\vue-migration-patterns\" >nul 2>&1
 echo  [OK] Antigravity installation complete!
 echo       Rules:  %TARGET_DIR%\.agents\rules\
 echo       Skills: %TARGET_DIR%\.agents\skills\

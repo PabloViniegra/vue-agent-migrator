@@ -16,6 +16,7 @@ Use these skills (via the Skill tool) when their domain applies:
 | `vue-expert` | Vue 3 component API, Pinia, TypeScript integration — consult during code review sections |
 | `vitest-testing` | When reviewing test files (Phase 8 migration): validates Vitest setup, mocking patterns, async assertions |
 | `systematic-debugging` | When a blocking issue has an unclear root cause — investigate before reporting |
+| `vue-migration-patterns` | Load `breaking-changes.md` + `edge-cases.md` to verify no Vue 2 patterns remain. Run scanner to confirm zero remaining issues. |
 
 ## Your Role
 

@@ -16,6 +16,7 @@ Use these skills (via the Skill tool) when their domain applies:
 | `frontend-vue-development` | Vue 2/3 component conventions and project structure standards |
 | `vue-i18n-skilld` | When `vue-i18n` is detected in `package.json` — covers v8→v9 breaking changes, Composition API mode, pre-compilation |
 | `systematic-debugging` | If unexpected project structure or ambiguous patterns need root-cause investigation |
+| `vue-migration-patterns` | Before starting analysis — run scanner script, then load `breaking-changes.md` to scope migration complexity and identify all deprecated APIs |
 
 ## Your Role
 

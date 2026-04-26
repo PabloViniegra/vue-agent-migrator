@@ -273,6 +273,33 @@ function Copy-AgentSkillsToLocal {
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Helper: copy custom skills bundled in this repo to a local project directory
+# ─────────────────────────────────────────────────────────────────────────────
+
+function Copy-CustomSkillsToLocal {
+    param(
+        [Parameter(Mandatory=$true)][string]$LocalSkillsDir,
+        [switch]$AsMdc  # For Cursor: copy SKILL.md as <name>.mdc
+    )
+    $customSkillsDir = Join-Path $ScriptDir "skills"
+    if (-not (Test-Path $customSkillsDir)) { return }
+    New-Item -ItemType Directory -Force -Path $LocalSkillsDir | Out-Null
+    Get-ChildItem $customSkillsDir -Directory | ForEach-Object {
+        $skillName = $_.Name
+        if ($AsMdc) {
+            $skillFile = Join-Path $_.FullName "SKILL.md"
+            if (Test-Path $skillFile) {
+                Copy-Item $skillFile -Destination (Join-Path $LocalSkillsDir "$skillName.mdc") -Force
+                Write-Info "$skillName.mdc (custom skill)"
+            }
+        } else {
+            Copy-Item $_.FullName -Destination $LocalSkillsDir -Recurse -Force
+            Write-Info "$skillName (custom skill)"
+        }
+    }
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Installation functions
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -309,6 +336,10 @@ function Install-ClaudeCode {
     Copy-AgentSkillsToLocal (Join-Path $TargetPath ".claude\skills")
     Start-Sleep -Milliseconds 200
 
+    Write-Step "Copying custom bundled skills to project..."
+    Copy-CustomSkillsToLocal (Join-Path $TargetPath ".claude\skills")
+    Start-Sleep -Milliseconds 200
+
     Write-Host ""
     Write-Success "Claude Code installation complete!"
     Write-Info "Agents   -> $agentsDir"
@@ -343,6 +374,10 @@ function Install-GitHubCopilot {
 
     Write-Step "Copying agent background skills to project..."
     Copy-AgentSkillsToLocal (Join-Path $TargetPath ".github\skills")
+    Start-Sleep -Milliseconds 200
+
+    Write-Step "Copying custom bundled skills to project..."
+    Copy-CustomSkillsToLocal (Join-Path $TargetPath ".github\skills")
     Start-Sleep -Milliseconds 200
 
     Write-Host ""
@@ -386,6 +421,10 @@ function Install-Codex {
     Copy-AgentSkillsToLocal $skillsDir
     Start-Sleep -Milliseconds 200
 
+    Write-Step "Copying custom bundled skills to project..."
+    Copy-CustomSkillsToLocal $skillsDir
+    Start-Sleep -Milliseconds 200
+
     Write-Host ""
     Write-Success "Codex CLI installation complete!"
     Write-Info ("Skills -> " + $skillsDir)
@@ -425,6 +464,10 @@ function Install-Gemini {
     Copy-AgentSkillsToLocal (Join-Path $TargetPath ".gemini\skills")
     Start-Sleep -Milliseconds 200
 
+    Write-Step "Copying custom bundled skills to project..."
+    Copy-CustomSkillsToLocal (Join-Path $TargetPath ".gemini\skills")
+    Start-Sleep -Milliseconds 200
+
     Write-Host ""
     Write-Success "Gemini CLI installation complete!"
     Write-Info "Agents -> $agentsDir"
@@ -457,6 +500,10 @@ function Install-OpenCode {
 
     Write-Step "Copying agent background skills to project..."
     Copy-AgentSkillsToLocal (Join-Path $TargetPath ".opencode\skills")
+    Start-Sleep -Milliseconds 200
+
+    Write-Step "Copying custom bundled skills to project..."
+    Copy-CustomSkillsToLocal (Join-Path $TargetPath ".opencode\skills")
     Start-Sleep -Milliseconds 200
 
     Write-Host ""
@@ -495,6 +542,10 @@ function Install-Antigravity {
     Copy-AgentSkillsToLocal (Join-Path $TargetPath ".agents\skills")
     Start-Sleep -Milliseconds 200
 
+    Write-Step "Copying custom bundled skills to project..."
+    Copy-CustomSkillsToLocal (Join-Path $TargetPath ".agents\skills")
+    Start-Sleep -Milliseconds 200
+
     Write-Host ""
     Write-Success "Antigravity installation complete!"
     Write-Info "Rules  -> $rulesDir"
@@ -527,6 +578,10 @@ function Install-Cursor {
 
     Write-Step "Copying agent background skills to project..."
     Copy-AgentSkillsToLocal -LocalSkillsDir $rulesDir -AsMdc
+    Start-Sleep -Milliseconds 200
+
+    Write-Step "Copying custom bundled skills to project..."
+    Copy-CustomSkillsToLocal -LocalSkillsDir $rulesDir -AsMdc
     Start-Sleep -Milliseconds 200
 
     Write-Host ""

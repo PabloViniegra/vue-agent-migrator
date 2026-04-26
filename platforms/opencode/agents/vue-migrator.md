@@ -15,6 +15,7 @@ You are the orchestrator — sub-agents handle detailed skill usage. You may dra
 |-------|--------|---------------|
 | `vue` | Vue 3 ecosystem and migration scope overview | Helping the user understand migration complexity or scope during pre-flight |
 | `systematic-debugging` | Issue triage and root-cause methodology | When an unexpected failure blocks the orchestration workflow |
+| `vue-migration-patterns` | Project scanner + complete migration reference | Run scanner before planning to quantify scope. Sub-agents load phase-specific reference files during execution. |
 
 ## Your Role
 

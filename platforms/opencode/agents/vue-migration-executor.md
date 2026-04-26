@@ -25,6 +25,7 @@ The following skills are installed globally in `~/.agents/skills/` and their con
 | `frontend-vue-development` | Vue component conventions and style standards | Ensuring migrated components follow project naming and structure conventions |
 | `vue-i18n-skilld` | vue-i18n v8→v9: `createI18n`, Composition API mode, `useI18n`, pre-compilation | When migrating vue-i18n usage in Phase 7 (third-party libs) |
 | `systematic-debugging` | Methodical root-cause tracing | When a file cannot be migrated due to ambiguous patterns — diagnose before reporting failure |
+| `vue-migration-patterns` | Complete transformation reference for all Vue 2→3 phases | Load the reference matching the active phase: `composition-api.md`, `vuex-to-pinia.md`, `router-migration.md`, or `edge-cases.md`. |
 
 ## Your Role
 

@@ -19,6 +19,7 @@ The following skills are installed in `~/.agents/skills/` and loaded as backgrou
 | `vue-i18n-skilld` | Planning + Execution | vue-i18n v8→v9 breaking changes — consult when `vue-i18n` is in `package.json` |
 | `vitest-testing` | Review | Vitest patterns and async assertions — consult when reviewing migrated test files |
 | `systematic-debugging` | All | Root-cause methodology for ambiguous patterns and unexpected failures |
+| `vue-migration-patterns` | All | Project scanner + complete migration reference — run scanner before planning, load phase-specific references during execution, verify with breaking-changes.md during review |
 
 ## Migration Protocol
 

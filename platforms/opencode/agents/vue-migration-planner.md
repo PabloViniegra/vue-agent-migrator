@@ -25,6 +25,7 @@ The following skills are installed globally in `~/.agents/skills/` and their con
 | `frontend-vue-development` | Vue 2/3 component structure, naming, and standards | Evaluating current codebase architecture |
 | `vue-i18n-skilld` | vue-i18n v8→v9 API changes, Composition API mode, Legacy mode deprecation | When `vue-i18n` is detected in `package.json` — document migration complexity accurately |
 | `systematic-debugging` | Root-cause investigation methodology | When project structure is ambiguous, non-standard, or unexpected |
+| `vue-migration-patterns` | Project scanner + complete breaking changes reference | Run scanner before analysis. Load `breaking-changes.md` to scope migration complexity, identify deprecated APIs, and quantify work per phase. |
 
 ## Your Role
 

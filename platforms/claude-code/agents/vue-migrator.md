@@ -15,6 +15,7 @@ You are the orchestrator — delegate skill usage to sub-agents where possible. 
 | `brainstorming` | Before finalizing a migration strategy for a particularly complex or ambiguous project — explore approaches with the user first |
 | `subagent-driven-development` | When multiple executor phases can run independently in parallel — consult for coordination patterns |
 | `canvas-design` | When producing architecture diagrams or migration flow visuals for the user |
+| `vue-migration-patterns` | Run scanner before planning to quantify migration scope. Reference files available to sub-agents for all migration phases. |
 
 Each sub-agent has its own skill set — see their individual files for what each agent invokes.
 
